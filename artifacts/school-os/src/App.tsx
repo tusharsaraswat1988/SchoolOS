@@ -8,6 +8,7 @@ import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Students from "@/pages/students";
 import StudentForm from "@/pages/student-form";
+import StudentDetail from "@/pages/student-detail";
 import Staff from "@/pages/staff";
 import Classes from "@/pages/classes";
 import Attendance from "@/pages/attendance";
@@ -34,7 +35,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/students/new" component={StudentForm} />
-      <Route path="/students/:id" component={Students} />
+      <Route path="/students/:id" component={StudentDetail} />
       <Route path="/students" component={Students} />
       <Route path="/staff" component={Staff} />
       <Route path="/classes" component={Classes} />

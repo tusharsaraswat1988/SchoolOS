@@ -26,13 +26,14 @@ const STATUS_COLORS: Record<string, string> = {
 export default function Fees() {
   const { user } = useAuthStore();
   const schoolId = user?.schoolId || 1;
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [payDialogId, setPayDialogId] = useState<number | null>(null);
   const [payForm, setPayForm] = useState({ amount: "", paymentMethod: "cash" });
   const qc = useQueryClient();
 
-  const { data, isLoading } = useListFeeRecords(schoolId, { status: statusFilter || undefined }, {
-    query: { queryKey: getListFeeRecordsQueryKey(schoolId, { status: statusFilter || undefined }) },
+  const activeStatus = statusFilter === "all" ? undefined : statusFilter;
+  const { data, isLoading } = useListFeeRecords(schoolId, { status: activeStatus }, {
+    query: { queryKey: getListFeeRecordsQueryKey(schoolId, { status: activeStatus }) },
   });
   const { data: summary } = useGetFeeSummary(schoolId, {}, {
     query: { queryKey: getGetFeeSummaryQueryKey(schoolId, {}) },
@@ -92,7 +93,7 @@ export default function Fees() {
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All</SelectItem>
+                <SelectItem value="all">All</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="paid">Paid</SelectItem>
                 <SelectItem value="overdue">Overdue</SelectItem>
