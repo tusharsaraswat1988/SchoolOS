@@ -1,0 +1,783 @@
+# MASTER DEVELOPMENT PROMPT — AI POWERED MULTI-TENANT SCHOOL OPERATING SYSTEM (ERP + CRM + AI)
+
+You are a world-class SaaS architect, enterprise ERP engineer, AI systems engineer, cloud infrastructure expert, database architect, cybersecurity engineer, and premium UI/UX product designer.
+
+Your task is to architect and build a COMPLETE ENTERPRISE-GRADE AI POWERED SCHOOL OPERATING SYSTEM for India and future global expansion.
+
+This platform is NOT a normal school ERP.
+
+This is an:
+
+# “AI Powered School Operating System”
+
+The software must combine:
+
+* School ERP
+* CRM
+* AI Assistant
+* Communication Platform
+* Analytics Platform
+* Payment Infrastructure
+* Workflow Automation
+* Voice Command System
+
+The platform must be:
+
+* scalable
+* modular
+* secure
+* AI-first
+* mobile-first
+* cloud-native
+* multi-tenant
+* multilingual
+* extremely easy for non-tech-savvy users
+
+The final product must feel:
+
+* premium
+* futuristic
+* elegant
+* luxurious
+* smooth
+* fast
+* internationally branded
+
+The UI quality should feel inspired by:
+
+* Apple
+* Notion
+* Stripe
+* Linear
+* WhatsApp
+* Airbnb
+
+====================================================
+CORE BUSINESS MODEL
+===================
+
+The software will operate in FOUR LEVELS:
+
+1. SUPER ADMIN PANEL (ERP COMPANY)
+2. STAFF ADMIN PANEL (COMPANY STAFF)
+3. FRANCHISEE PANEL (MULTI SCHOOL MANAGER)
+4. INDIVIDUAL SCHOOL SYSTEM
+
+The platform must support:
+
+* multiple franchisees
+* multiple schools under franchisees
+* fully independent schools
+* separate ownership structures
+* separate databases
+* separate permissions
+* separate branding
+
+====================================================
+MULTI-TENANT DATABASE ARCHITECTURE (CRITICAL)
+=============================================
+
+VERY IMPORTANT:
+Every school MUST have:
+
+* separate database
+* separate backups
+* separate encryption keys
+* separate file storage isolation
+* separate permissions
+* separate branding
+* separate login environment
+
+NO DATA SHOULD MIX BETWEEN SCHOOLS.
+
+Architecture:
+
+* One core platform
+* Separate PostgreSQL database per school
+* Multi-tenant architecture with database isolation
+
+Required:
+
+* automatic backups
+* rollback system
+* restore points
+* disaster recovery
+* database encryption
+* cloud storage isolation
+
+====================================================
+TECH STACK
+==========
+
+Frontend:
+
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+* Framer Motion
+
+Backend:
+
+* Node.js
+* NestJS or Express
+
+Database:
+
+* PostgreSQL
+
+ORM:
+
+* Prisma
+
+Hosting:
+
+* AWS or Google Cloud
+
+Storage:
+
+* AWS S3
+
+Authentication:
+
+* JWT
+* Refresh Tokens
+* OTP Login
+* Google Login
+
+Notifications:
+
+* Firebase Push Notifications
+
+Realtime:
+
+* Socket.io
+
+AI:
+
+* OpenAI APIs
+* Whisper API
+* AI orchestration layer
+
+====================================================
+UI / UX REQUIREMENTS
+====================
+
+The UI must be INTERNATIONAL LEVEL PREMIUM.
+
+NO outdated ERP design.
+
+Design Requirements:
+
+* ultra clean
+* soft shadows
+* smooth animations
+* rounded cards
+* responsive layout
+* minimal clutter
+* modern dashboards
+* floating actions
+* touch-friendly interface
+
+The UI must support:
+
+* Dark Mode
+* Light Mode
+
+Must work perfectly on:
+
+* Android
+* iPhone
+* Tablets
+* Desktop
+* Laptop
+
+Must support:
+
+* Hindi
+* English
+* Hinglish
+
+The software must feel:
+
+* WhatsApp simple
+* Apple polished
+* Stripe organized
+
+====================================================
+SECURITY REQUIREMENTS
+=====================
+
+Implement enterprise-grade security.
+
+Required:
+
+* AES encryption
+* JWT authentication
+* secure API gateway
+* RBAC (Role Based Access)
+* audit logs
+* login history
+* session management
+* IP/device tracking
+* 2FA
+* database encryption
+* backup encryption
+* SQL injection protection
+* XSS protection
+* CSRF protection
+* rate limiting
+* secure uploads
+* cloud firewall compatibility
+
+Track ALL actions:
+
+* who changed
+* what changed
+* when changed
+* old value
+* new value
+
+====================================================
+SYSTEM HIERARCHY
+================
+
+####################################################
+
+1. SUPER ADMIN PANEL (ERP COMPANY)
+   ####################################################
+
+This is the highest control panel.
+
+Features:
+
+* manage all franchisees
+* manage all schools
+* system analytics
+* server monitoring
+* subscription management
+* billing management
+* feature toggles
+* AI usage monitoring
+* support ticket management
+* database monitoring
+* payment gateway management
+* global announcements
+* platform updates
+* backup monitoring
+* school onboarding
+* migration monitoring
+
+Fields:
+
+* company info
+* subscription plans
+* active schools
+* active users
+* storage usage
+* AI usage credits
+* payment gateway configuration
+
+Dashboard:
+
+* revenue analytics
+* active schools
+* fee collections
+* server health
+* support tickets
+* usage analytics
+
+====================================================
+2. STAFF ADMIN PANEL (COMPANY STAFF)
+====================================
+
+Internal ERP company employees.
+
+Must support permission-based access.
+
+Roles:
+
+* onboarding staff
+* support executive
+* migration team
+* sales team
+* finance team
+* technical admin
+
+Features:
+
+* school onboarding
+* migration support
+* ticket management
+* support chat
+* remote diagnostics
+* school setup wizard
+* migration tools
+* demo setup
+* CRM for leads
+* issue monitoring
+
+Permission system required.
+
+====================================================
+3. FRANCHISEE PANEL (MULTIPLE SCHOOL CONTROL)
+=============================================
+
+Franchisee can manage multiple schools.
+
+Features:
+
+* multi-school management
+* branch analytics
+* branch comparison
+* franchise reports
+* centralized monitoring
+* branding management
+* fee monitoring
+* admission analytics
+* performance comparison
+
+Can create/manage:
+
+* multiple schools
+* school admins
+* branch staff
+
+====================================================
+4. INDIVIDUAL SCHOOL SYSTEM
+===========================
+
+Each school has independent system.
+
+====================================================
+OWNER ADMIN PANEL
+=================
+
+Features:
+
+* full school overview
+* accounts overview
+* analytics dashboard
+* approvals
+* AI insights
+* transport overview
+* salary overview
+* admissions overview
+* report generation
+* user management
+
+====================================================
+ACCOUNTANT ADMIN PANEL
+======================
+
+Features:
+
+* fees
+* billing
+* receipts
+* dues
+* discounts
+* online payments
+* bank reconciliation
+* payment gateway
+* accounting reports
+* expenses
+* vouchers
+* salary processing
+
+====================================================
+PRINCIPAL PANEL
+===============
+
+Features:
+
+* attendance monitoring
+* academic analytics
+* teacher monitoring
+* exam analytics
+* lesson plan approvals
+* announcements
+* student discipline
+* AI academic insights
+
+====================================================
+TEACHER APP
+===========
+
+Features:
+
+* attendance
+* homework
+* lesson plans
+* AI lesson plans
+* marks entry
+* report comments
+* circulars
+* parent communication
+* leave requests
+* voice attendance
+* AI assistant
+
+====================================================
+STUDENT APP
+===========
+
+Features:
+
+* homework
+* attendance
+* timetable
+* exam results
+* notices
+* assignments
+* online classes
+* fee details
+* transport tracking
+
+====================================================
+PARENT APP
+==========
+
+Features:
+
+* fee payments
+* report cards
+* notices
+* transport tracking
+* leave requests
+* AI chatbot support
+* payment reminders
+* attendance alerts
+* online admission
+
+====================================================
+SUPPORT STAFF APP
+=================
+
+For:
+
+* drivers
+* guards
+* gate staff
+* transport staff
+
+Features:
+
+* pickup/drop verification
+* guardian verification
+* QR scanning
+* OTP verification
+* visitor logs
+* bus attendance
+* gate entry logs
+* transport route management
+
+====================================================
+PHASE 1 — CORE SYSTEM (MOST IMPORTANT)
+======================================
+
+1. School setup
+2. Student management
+3. Admissions
+4. Attendance
+5. Fees & billing
+6. Online payments
+7. Accounts
+8. Parent app
+9. Teacher app
+10. Principal dashboard
+11. Report cards
+12. AI report comments
+13. Message system
+14. WhatsApp integration
+15. Dashboard analytics
+16. Migration system
+17. Voice AI assistant
+18. Printing system
+19. Role permissions
+20. Notification system
+
+====================================================
+STUDENT MANAGEMENT MODULE
+=========================
+
+Fields:
+
+* admission number
+* roll number
+* student photo
+* first/middle/last name
+* gender
+* DOB
+* blood group
+* Aadhaar optional
+* category
+* religion optional
+* father details
+* mother details
+* guardian details
+* emergency contacts
+* pickup/drop guardians
+* transport route
+* medical details
+* allergies
+* hostel details
+* previous school
+* TC details
+* custom fields
+* document uploads
+
+Features:
+
+* online admission
+* bulk import/export
+* QR generation
+* ID card generation
+* document vault
+
+====================================================
+FEES & BILLING
+==============
+
+Features:
+
+* custom fee structure
+* installment fees
+* transport fee
+* hostel fee
+* scholarships
+* discounts
+* late fees
+* dues reminders
+* payment receipts
+* fee analytics
+* outstanding reports
+* optional hidden/manual billing categories
+
+====================================================
+PAYMENT GATEWAY & BANKING INTEGRATION
+=====================================
+
+Support:
+
+* Razorpay
+* PhonePe
+* Paytm
+* Cashfree
+* Stripe
+
+Features:
+
+* UPI
+* QR payments
+* online payments
+* auto reconciliation
+* payment reminders
+* instant receipts
+* payment links
+* WhatsApp payment links
+
+Bank integration ready architecture:
+
+* HDFC
+* ICICI
+* Axis
+* SBI APIs
+
+Security:
+
+* PCI compliant architecture
+* encrypted transactions
+* secure webhook validation
+
+====================================================
+AI ASSISTANT SYSTEM
+===================
+
+Core differentiator of software.
+
+Features:
+
+* voice commands
+* AI search
+* AI reports
+* AI report comments
+* AI lesson plans
+* AI insights
+* AI help assistant
+* AI timetable assistance
+
+Examples:
+
+* “Show fee details of Ananya Sahu”
+* “Generate Class 5 report cards”
+* “Show pending salaries”
+* “Generate attendance report”
+
+Languages:
+
+* Hindi
+* Hinglish
+* English
+
+Voice Flow:
+Voice → Speech to Text → Intent Detection → Permission Check → Secure Action → Human Response
+
+====================================================
+MESSAGE & WHATSAPP SYSTEM
+=========================
+
+Features:
+
+* SMS
+* WhatsApp integration
+* push notifications
+* circulars
+* payment reminders
+* homework alerts
+* emergency alerts
+
+Support:
+
+* multilingual templates
+* scheduled messages
+* auto reminders
+* fee due notifications
+
+====================================================
+MIGRATION SYSTEM (VERY IMPORTANT)
+=================================
+
+Build enterprise-grade migration engine.
+
+Features:
+
+* Excel import
+* CSV import
+* field mapping
+* duplicate detection
+* preview before import
+* rollback support
+* import validation
+* migration logs
+* automatic backups before migration
+
+Import:
+
+* students
+* staff
+* fees
+* transport
+* attendance
+* exams
+
+====================================================
+PHASE 2 — ADVANCED OPERATIONS
+=============================
+
+1. Transport management
+2. GPS bus tracking
+3. Guardian verification
+4. Pickup/drop OTP verification
+5. HR & payroll
+6. Salary transfer
+7. Leave management
+8. Library
+9. Inventory
+10. Lesson plan workflow
+11. AI timetable optimization
+12. Digital TC
+13. Visitor management
+14. UDISE integration
+15. Smart approvals
+
+====================================================
+PHASE 3 — ENTERPRISE AI EXPANSION
+=================================
+
+1. Advanced AI Copilot
+2. Predictive analytics
+3. Branch comparison AI
+4. AI operational insights
+5. AI support chatbot
+6. Custom analytics builder
+7. API ecosystem
+8. Marketplace integrations
+9. Automation workflows
+10. Smart recommendation engine
+
+====================================================
+DASHBOARD REQUIREMENTS
+======================
+
+Fully customizable dashboards.
+
+Widgets:
+
+* fee collection
+* pending dues
+* attendance
+* admissions
+* birthdays
+* transport status
+* salary analytics
+* AI insights
+
+Each school can customize dashboard layout.
+
+====================================================
+PRINTING SYSTEM
+===============
+
+Printable:
+
+* receipts
+* report cards
+* certificates
+* ID cards
+* salary slips
+* TC
+* transport slips
+
+Export:
+
+* PDF
+* Excel
+* CSV
+
+====================================================
+FINAL OUTPUT REQUIRED
+=====================
+
+Generate:
+
+1. Full architecture
+2. Database schema
+3. Folder structure
+4. API architecture
+5. Authentication system
+6. UI wireframes
+7. Mobile responsive layouts
+8. Security implementation
+9. Migration engine
+10. AI architecture
+11. Voice command architecture
+12. Payment architecture
+13. Permission matrix
+14. Deployment structure
+15. Replit-compatible setup
+16. AWS deployment strategy
+17. Modular development roadmap
+18. Production-grade scalable codebase
+
+The final product must feel:
+
+* premium
+* luxurious
+* modern
+* trustworthy
+* AI-powered
+* simple for non-tech users
+* enterprise-grade secure
+
+Do NOT skip any important detail.
