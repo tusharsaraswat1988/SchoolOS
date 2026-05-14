@@ -31,7 +31,7 @@ export default function Fees() {
   const [payForm, setPayForm] = useState({ amount: "", paymentMethod: "cash" });
   const qc = useQueryClient();
 
-  const activeStatus = statusFilter === "all" ? undefined : statusFilter;
+  const activeStatus = statusFilter === "all" ? undefined : statusFilter as any;
   const { data, isLoading } = useListFeeRecords(schoolId, { status: activeStatus }, {
     query: { queryKey: getListFeeRecordsQueryKey(schoolId, { status: activeStatus }) },
   });

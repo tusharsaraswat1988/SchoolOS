@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout";
 import { useAuthStore } from "@/lib/auth";
 import {
   useListClasses, useListStudents, useMarkAttendance, useGetAttendanceSummary,
-  getListAttendanceQueryKey, getGetAttendanceSummaryQueryKey
+  getListAttendanceQueryKey, getGetAttendanceSummaryQueryKey, getListStudentsQueryKey
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -36,7 +36,7 @@ export default function Attendance() {
   const { data: studentsData } = useListStudents(
     schoolId,
     { classId: selectedClassId ? Number(selectedClassId) : undefined },
-    { query: { enabled: !!selectedClassId } }
+    { query: { enabled: !!selectedClassId, queryKey: getListStudentsQueryKey(schoolId, { classId: selectedClassId ? Number(selectedClassId) : undefined }) } }
   );
   const { data: summary } = useGetAttendanceSummary(schoolId, {}, {
     query: { queryKey: getGetAttendanceSummaryQueryKey(schoolId, {}) },

@@ -52,7 +52,7 @@ export default function Staff() {
     e.preventDefault();
     createStaff.mutate({
       schoolId,
-      data: { ...form, role: form.role as any, salary: form.salary || undefined },
+      data: { ...form, role: form.role as any, salary: form.salary ? Number(form.salary) : undefined },
     });
   };
 

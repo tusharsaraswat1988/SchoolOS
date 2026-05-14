@@ -65,7 +65,6 @@ export default function Announcements() {
         content: form.content,
         audience: form.audience as any,
         priority: form.priority as any,
-        authorId: user?.id,
       },
     });
   };

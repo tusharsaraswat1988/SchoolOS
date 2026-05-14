@@ -43,7 +43,6 @@ export default function StudentForm() {
         classId: Number(form.classId),
         gender: form.gender as any,
         admissionNumber: form.admissionNumber || `ADM-${Date.now()}`,
-        status: "active",
       },
     });
   };

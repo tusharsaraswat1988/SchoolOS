@@ -89,13 +89,15 @@ router.get("/schools/:schoolId/dashboard", async (req, res) => {
       .limit(5),
     db
       .select({
-        month: sql<string>`to_char(${feeRecordsTable.paidDate}::date, 'Mon')`,
+        month: sql<string>`to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'Mon')`,
+        sortKey: sql<string>`to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'YYYY-MM')`,
         collected: sql<number>`sum(case when ${feeRecordsTable.status} = 'paid' then coalesce(${feeRecordsTable.paidAmount}, 0) else 0 end)`,
         pending: sql<number>`sum(case when ${feeRecordsTable.status} in ('pending', 'partial', 'overdue') then ${feeRecordsTable.amount} - coalesce(${feeRecordsTable.discount}, 0) - coalesce(${feeRecordsTable.paidAmount}, 0) else 0 end)`,
       })
       .from(feeRecordsTable)
       .where(eq(feeRecordsTable.schoolId, schoolId))
-      .groupBy(sql`to_char(${feeRecordsTable.paidDate}::date, 'Mon')`)
+      .groupBy(sql`to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'Mon'), to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'YYYY-MM')`)
+      .orderBy(sql`to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'YYYY-MM')`)
       .limit(6),
   ]);
 
