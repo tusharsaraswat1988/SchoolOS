@@ -12,6 +12,7 @@ import {
   ActivitySquare,
   LogOut,
   Building,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -42,6 +43,7 @@ export function Layout({ children }: LayoutProps) {
     { href: "/attendance", label: "Attendance", icon: CalendarCheck, roles: ["school_admin", "principal", "teacher"] },
     { href: "/fees", label: "Fees", icon: CreditCard, roles: ["school_admin", "principal"] },
     { href: "/announcements", label: "Announcements", icon: Megaphone, roles: ["school_admin", "principal", "teacher"] },
+    { href: "/analytics", label: "Analytics", icon: BarChart3, roles: ["school_admin", "principal"] },
     { href: "/activity", label: "Activity Feed", icon: ActivitySquare, roles: ["school_admin", "principal"] },
   ];
 

@@ -16,6 +16,7 @@ import Fees from "@/pages/fees";
 import Announcements from "@/pages/announcements";
 import Schools from "@/pages/schools";
 import Activity from "@/pages/activity";
+import Analytics from "@/pages/analytics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,7 @@ function Router() {
       <Route path="/announcements" component={Announcements} />
       <Route path="/schools" component={Schools} />
       <Route path="/activity" component={Activity} />
+      <Route path="/analytics" component={Analytics} />
       <Route component={NotFound} />
     </Switch>
   );
