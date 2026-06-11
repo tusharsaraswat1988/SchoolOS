@@ -14,6 +14,7 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { login, user, isHydrated, hydrate } = useAuthStore();
   const [introStage, setIntroStage] = useState<"intro" | "expanding" | "form">("intro");
+  const [orbHovered, setOrbHovered] = useState(false);
   const [schoolCode, setSchoolCode] = useState("");
   const [userId, setUserId] = useState("");
   const [accessCode, setAccessCode] = useState("");
@@ -103,35 +104,38 @@ export default function Login() {
         }`}
       />
 
-      <button
-        type="button"
-        onClick={startExperience}
-        aria-label="Open School OS login"
-        className={`group absolute left-1/2 top-1/2 z-20 flex h-52 w-52 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-primary/25 bg-card/70 text-center shadow-[0_0_0_1px_hsl(var(--primary)/0.12),0_30px_80px_hsl(var(--primary)/0.22)] backdrop-blur-md transition-all duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+      <div
+        className={`absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center transition-all duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
           introStage === "form"
-            ? "pointer-events-none scale-[1.8] opacity-0"
+            ? "pointer-events-none scale-[1.6] opacity-0"
             : introStage === "expanding"
-              ? "scale-125 opacity-0"
+              ? "scale-110 opacity-0"
               : "scale-100 opacity-100"
         }`}
       >
-        <span className="login-orb-ring" />
-        <span className="login-orb-ring login-orb-ring-delay" />
-        <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <AiCore size={184} charged={introStage !== "intro"} />
-        </span>
-        <span className="pointer-events-none relative z-10 mt-1 flex flex-col items-center">
-          <span className="text-base font-semibold tracking-wide text-foreground drop-shadow-sm">
-            School OS
-          </span>
-          <span className="mt-1 text-[10px] uppercase tracking-[0.26em] text-muted-foreground">
-            Tap to Enter
-          </span>
-          <span className="mt-0.5 text-[9px] uppercase tracking-[0.24em] text-primary/80">
+        <button
+          type="button"
+          onClick={startExperience}
+          onMouseEnter={() => setOrbHovered(true)}
+          onMouseLeave={() => setOrbHovered(false)}
+          aria-label="Open School OS login"
+          className="group relative flex h-56 w-56 cursor-pointer items-center justify-center rounded-full transition-transform duration-500 ease-out hover:scale-[1.05] active:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
+        >
+          <span className="pointer-events-none absolute inset-[-18px] rounded-full bg-primary/10 opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-100" />
+          <AiCore size={208} charged={introStage !== "intro"} active={orbHovered} />
+        </button>
+
+        <div className="mt-6 flex flex-col items-center text-center">
+          <span className="text-xl font-semibold tracking-tight text-foreground">School OS</span>
+          <span className="mt-1 text-[11px] font-medium uppercase tracking-[0.3em] text-primary/80">
             AI Powered ERP
           </span>
-        </span>
-      </button>
+          <span className="mt-3 inline-flex animate-pulse items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary backdrop-blur-sm">
+            <Sparkles className="h-3 w-3" />
+            Tap the core to sign in
+          </span>
+        </div>
+      </div>
 
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-6xl items-center justify-center">
         <div

@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 type AiCoreProps = {
   size?: number;
   charged?: boolean;
+  active?: boolean;
 };
 
 type Node = { x: number; y: number; z: number };
@@ -11,10 +12,11 @@ type Node = { x: number; y: number; z: number };
  * Canvas neural core: a rotating node-sphere that leans toward the pointer
  * and pulses energy. Evokes an "AI mind" without drawing a literal brain.
  */
-export function AiCore({ size = 184, charged = false }: AiCoreProps) {
+export function AiCore({ size = 184, charged = false, active = false }: AiCoreProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const chargedRef = useRef(charged);
+  const activeRef = useRef(active);
   const stateRef = useRef({
     rotX: 0,
     rotY: 0,
@@ -23,9 +25,11 @@ export function AiCore({ size = 184, charged = false }: AiCoreProps) {
     energy: 0.2,
     targetEnergy: 0.2,
     pulse: 0,
+    hover: 0,
   });
 
   chargedRef.current = charged;
+  activeRef.current = active;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -90,10 +94,12 @@ export function AiCore({ size = 184, charged = false }: AiCoreProps) {
       const s = stateRef.current;
       s.rotX += (s.targetRotX - s.rotX) * 0.06;
       s.rotY += (s.targetRotY - s.rotY) * 0.06;
-      const targetE = chargedRef.current ? 1.6 : s.targetEnergy;
+      s.hover += ((activeRef.current ? 1 : 0) - s.hover) * 0.1;
+      const baseE = chargedRef.current ? 1.6 : s.targetEnergy;
+      const targetE = baseE + s.hover * 0.6;
       s.energy += (targetE - s.energy) * 0.08;
-      s.pulse += 0.045;
-      autoSpin += 0.0015;
+      s.pulse += 0.045 + s.hover * 0.02;
+      autoSpin += 0.0015 + s.hover * 0.0012;
 
       ctx.clearRect(0, 0, size, size);
 
@@ -125,6 +131,17 @@ export function AiCore({ size = 184, charged = false }: AiCoreProps) {
       coreGrad.addColorStop(1, "rgba(99,130,246,0)");
       ctx.fillStyle = coreGrad;
       ctx.fillRect(0, 0, size, size);
+
+      if (s.hover > 0.01) {
+        const rimR = radius * (1.12 + Math.sin(s.pulse) * 0.02);
+        const rim = ctx.createRadialGradient(cx, cy, rimR * 0.82, cx, cy, rimR);
+        rim.addColorStop(0, "rgba(120,160,255,0)");
+        rim.addColorStop(1, `rgba(130,165,255,${0.22 * s.hover})`);
+        ctx.fillStyle = rim;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rimR, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       for (const [i, j] of pairs) {
         const a = proj[i];
