@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1781191407841,
+      "tag": "0000_phase0_foundation_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781191449677,
+      "tag": "0001_phase0_foundation_hardening",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781280000000,
+      "tag": "0002_udise_phase1_mandatory",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781283600000,
+      "tag": "0003_student_documents",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { Layout } from "@/components/layout";
-import { useAuthStore } from "@/lib/auth";
+import { useScope } from "@/lib/use-scope";
 import { useListStudents, useDeleteStudent, getListStudentsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -19,18 +19,21 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function Students() {
-  const { user } = useAuthStore();
-  const schoolId = user?.schoolId || 1;
+  const { branchId, sessionId } = useScope();
   const [search, setSearch] = useState("");
   const qc = useQueryClient();
 
-  const { data, isLoading } = useListStudents(schoolId, { search: search || undefined }, {
-    query: { queryKey: getListStudentsQueryKey(schoolId, { search: search || undefined }) },
+  const { data, isLoading } = useListStudents(branchId, sessionId, { search: search || undefined }, {
+    query: { queryKey: branchId && sessionId ? getListStudentsQueryKey(branchId, sessionId, { search: search || undefined }) : ["students-disabled"] },
   });
 
   const deleteStudent = useDeleteStudent({
     mutation: {
-      onSuccess: () => qc.invalidateQueries({ queryKey: getListStudentsQueryKey(schoolId) }),
+      onSuccess: () => {
+        if (branchId && sessionId) {
+          qc.invalidateQueries({ queryKey: getListStudentsQueryKey(branchId, sessionId) });
+        }
+      },
     },
   });
 
@@ -132,7 +135,7 @@ export default function Students() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => deleteStudent.mutate({ schoolId, studentId: s.id })}
+                            onClick={() => branchId && sessionId && deleteStudent.mutate({ branchId, sessionId, studentId: s.id })}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>

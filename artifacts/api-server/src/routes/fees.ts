@@ -1,95 +1,117 @@
 import { Router } from "express";
-import { db, feeRecordsTable, studentsTable, classesTable } from "@workspace/db";
-import { eq, sql, and } from "drizzle-orm";
+import { classesTable, db, feeRecordsTable, studentsTable } from "@workspace/db";
+import { and, eq, sql } from "drizzle-orm";
 import { CreateFeeRecordBody, RecordFeePaymentBody } from "@workspace/api-zod";
+import { toPgDate } from "../lib/db-values";
+import { resolveSessionScope } from "../lib/scope";
 
 const router = Router();
 
-const feeWithStudent = (schoolId: number) =>
-  db
-    .select({
-      id: feeRecordsTable.id,
-      studentId: feeRecordsTable.studentId,
-      studentName: sql<string>`concat(${studentsTable.firstName}, ' ', ${studentsTable.lastName})`,
-      admissionNumber: studentsTable.admissionNumber,
-      className: classesTable.name,
-      feeType: feeRecordsTable.feeType,
-      amount: feeRecordsTable.amount,
-      paidAmount: feeRecordsTable.paidAmount,
-      discount: feeRecordsTable.discount,
-      status: feeRecordsTable.status,
-      dueDate: feeRecordsTable.dueDate,
-      paidDate: feeRecordsTable.paidDate,
-      receiptNumber: feeRecordsTable.receiptNumber,
-      paymentMethod: feeRecordsTable.paymentMethod,
-      schoolId: feeRecordsTable.schoolId,
-      createdAt: feeRecordsTable.createdAt,
-    })
+const feeWithStudentSelect = {
+  id: feeRecordsTable.id,
+  studentId: feeRecordsTable.studentId,
+  studentName: sql<string>`concat(${studentsTable.firstName}, ' ', ${studentsTable.lastName})`,
+  admissionNumber: studentsTable.admissionNumber,
+  className: classesTable.name,
+  feeType: feeRecordsTable.feeType,
+  amount: feeRecordsTable.amount,
+  paidAmount: feeRecordsTable.paidAmount,
+  discount: feeRecordsTable.discount,
+  status: feeRecordsTable.status,
+  dueDate: feeRecordsTable.dueDate,
+  paidDate: feeRecordsTable.paidDate,
+  receiptNumber: feeRecordsTable.receiptNumber,
+  paymentMethod: feeRecordsTable.paymentMethod,
+  branchId: feeRecordsTable.branchId,
+  sessionId: feeRecordsTable.sessionId,
+  createdAt: feeRecordsTable.createdAt,
+};
+
+async function getFeeWithStudent(branchId: number, sessionId: number, feeId: number) {
+  const [row] = await db
+    .select(feeWithStudentSelect)
     .from(feeRecordsTable)
     .leftJoin(studentsTable, eq(feeRecordsTable.studentId, studentsTable.id))
     .leftJoin(classesTable, eq(studentsTable.classId, classesTable.id))
-    .where(eq(feeRecordsTable.schoolId, schoolId));
+    .where(
+      and(
+        eq(feeRecordsTable.branchId, branchId),
+        eq(feeRecordsTable.sessionId, sessionId),
+        eq(feeRecordsTable.id, feeId),
+      ),
+    )
+    .limit(1);
+  return row;
+}
 
-router.get("/schools/:schoolId/fees", async (req, res) => {
-  const schoolId = Number(req.params.schoolId);
+router.get("/branches/:branchId/sessions/:sessionId/fees", async (req, res) => {
+  const branchId = Number(req.params.branchId);
+  const sessionId = Number(req.params.sessionId);
+  const scope = await resolveSessionScope(branchId, sessionId);
+  if (!scope) return res.status(404).json({ error: "Session not found" });
+
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 20;
   const studentId = req.query.studentId ? Number(req.query.studentId) : undefined;
   const status = req.query.status as string | undefined;
   const offset = (page - 1) * limit;
 
-  const conditions = [eq(feeRecordsTable.schoolId, schoolId)];
+  const conditions = [
+    eq(feeRecordsTable.branchId, branchId),
+    eq(feeRecordsTable.sessionId, sessionId),
+  ];
   if (studentId) conditions.push(eq(feeRecordsTable.studentId, studentId));
-  if (status) conditions.push(eq(feeRecordsTable.status, status as any));
+  if (status) conditions.push(eq(feeRecordsTable.status, status as "pending"));
 
   const [records, countResult] = await Promise.all([
     db
-      .select({
-        id: feeRecordsTable.id,
-        studentId: feeRecordsTable.studentId,
-        studentName: sql<string>`concat(${studentsTable.firstName}, ' ', ${studentsTable.lastName})`,
-        admissionNumber: studentsTable.admissionNumber,
-        className: classesTable.name,
-        feeType: feeRecordsTable.feeType,
-        amount: feeRecordsTable.amount,
-        paidAmount: feeRecordsTable.paidAmount,
-        discount: feeRecordsTable.discount,
-        status: feeRecordsTable.status,
-        dueDate: feeRecordsTable.dueDate,
-        paidDate: feeRecordsTable.paidDate,
-        receiptNumber: feeRecordsTable.receiptNumber,
-        paymentMethod: feeRecordsTable.paymentMethod,
-        schoolId: feeRecordsTable.schoolId,
-        createdAt: feeRecordsTable.createdAt,
-      })
+      .select(feeWithStudentSelect)
       .from(feeRecordsTable)
       .leftJoin(studentsTable, eq(feeRecordsTable.studentId, studentsTable.id))
       .leftJoin(classesTable, eq(studentsTable.classId, classesTable.id))
       .where(and(...conditions))
       .limit(limit)
       .offset(offset),
-    db.select({ count: sql<number>`count(*)` }).from(feeRecordsTable).where(and(...conditions)),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(feeRecordsTable)
+      .where(and(...conditions)),
   ]);
 
   return res.json({ data: records, total: Number(countResult[0].count), page, limit });
 });
 
-router.post("/schools/:schoolId/fees", async (req, res) => {
-  const schoolId = Number(req.params.schoolId);
+router.post("/branches/:branchId/sessions/:sessionId/fees", async (req, res) => {
+  const branchId = Number(req.params.branchId);
+  const sessionId = Number(req.params.sessionId);
+  const scope = await resolveSessionScope(branchId, sessionId);
+  if (!scope) return res.status(404).json({ error: "Session not found" });
+
   const parsed = CreateFeeRecordBody.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid body" });
 
   const [record] = await db
     .insert(feeRecordsTable)
-    .values({ ...parsed.data, schoolId, amount: String(parsed.data.amount), discount: parsed.data.discount ? String(parsed.data.discount) : "0" })
+    .values({
+      studentId: parsed.data.studentId,
+      feeType: parsed.data.feeType,
+      societyId: scope.societyId,
+      schoolId: scope.schoolId,
+      branchId: scope.branchId,
+      sessionId: scope.sessionId,
+      amount: parsed.data.amount,
+      discount: parsed.data.discount ?? 0,
+      dueDate: toPgDate(parsed.data.dueDate)!,
+    })
     .returning();
 
-  const [withStudent] = await feeWithStudent(schoolId).where(eq(feeRecordsTable.id, record.id)).limit(1);
+  const withStudent = await getFeeWithStudent(branchId, sessionId, record.id);
   return res.status(201).json(withStudent);
 });
 
-router.post("/schools/:schoolId/fees/:feeId/pay", async (req, res) => {
-  const schoolId = Number(req.params.schoolId);
+router.post("/branches/:branchId/sessions/:sessionId/fees/:feeId/pay", async (req, res) => {
+  const branchId = Number(req.params.branchId);
+  const sessionId = Number(req.params.sessionId);
   const feeId = Number(req.params.feeId);
   const parsed = RecordFeePaymentBody.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid body" });
@@ -97,34 +119,42 @@ router.post("/schools/:schoolId/fees/:feeId/pay", async (req, res) => {
   const [existing] = await db
     .select()
     .from(feeRecordsTable)
-    .where(and(eq(feeRecordsTable.id, feeId), eq(feeRecordsTable.schoolId, schoolId)))
+    .where(
+      and(
+        eq(feeRecordsTable.id, feeId),
+        eq(feeRecordsTable.branchId, branchId),
+        eq(feeRecordsTable.sessionId, sessionId),
+      ),
+    )
     .limit(1);
 
   if (!existing) return res.status(404).json({ error: "Fee record not found" });
 
-  const totalAmount = Number(existing.amount) - Number(existing.discount ?? 0);
-  const newPaid = Number(existing.paidAmount ?? 0) + parsed.data.amount;
+  const totalAmount = existing.amount - (existing.discount ?? 0);
+  const newPaid = (existing.paidAmount ?? 0) + parsed.data.amount;
   const newStatus = newPaid >= totalAmount ? "paid" : newPaid > 0 ? "partial" : "pending";
   const receiptNumber = newStatus === "paid" ? `RCP-${Date.now()}` : existing.receiptNumber;
 
-  const [updated] = await db
+  await db
     .update(feeRecordsTable)
     .set({
-      paidAmount: String(newPaid),
+      paidAmount: newPaid,
       status: newStatus,
       paidDate: newStatus === "paid" ? new Date().toISOString().split("T")[0] : existing.paidDate,
       receiptNumber,
-      paymentMethod: parsed.data.paymentMethod as any,
+      paymentMethod: parsed.data.paymentMethod as "cash" | "online" | "cheque" | "upi" | "card",
     })
-    .where(eq(feeRecordsTable.id, feeId))
-    .returning();
+    .where(eq(feeRecordsTable.id, feeId));
 
-  const [withStudent] = await feeWithStudent(schoolId).where(eq(feeRecordsTable.id, feeId)).limit(1);
+  const withStudent = await getFeeWithStudent(branchId, sessionId, feeId);
   return res.json(withStudent);
 });
 
-router.get("/schools/:schoolId/fees/summary", async (req, res) => {
-  const schoolId = Number(req.params.schoolId);
+router.get("/branches/:branchId/sessions/:sessionId/fees/summary", async (req, res) => {
+  const branchId = Number(req.params.branchId);
+  const sessionId = Number(req.params.sessionId);
+  const scope = await resolveSessionScope(branchId, sessionId);
+  if (!scope) return res.status(404).json({ error: "Session not found" });
 
   const [stats, recent] = await Promise.all([
     db
@@ -135,30 +165,21 @@ router.get("/schools/:schoolId/fees/summary", async (req, res) => {
         totalOverdue: sql<number>`sum(case when ${feeRecordsTable.status} = 'overdue' then ${feeRecordsTable.amount} - coalesce(${feeRecordsTable.discount}, 0) else 0 end)`,
       })
       .from(feeRecordsTable)
-      .where(eq(feeRecordsTable.schoolId, schoolId)),
+      .where(
+        and(eq(feeRecordsTable.branchId, branchId), eq(feeRecordsTable.sessionId, sessionId)),
+      ),
     db
-      .select({
-        id: feeRecordsTable.id,
-        studentId: feeRecordsTable.studentId,
-        studentName: sql<string>`concat(${studentsTable.firstName}, ' ', ${studentsTable.lastName})`,
-        admissionNumber: studentsTable.admissionNumber,
-        className: classesTable.name,
-        feeType: feeRecordsTable.feeType,
-        amount: feeRecordsTable.amount,
-        paidAmount: feeRecordsTable.paidAmount,
-        discount: feeRecordsTable.discount,
-        status: feeRecordsTable.status,
-        dueDate: feeRecordsTable.dueDate,
-        paidDate: feeRecordsTable.paidDate,
-        receiptNumber: feeRecordsTable.receiptNumber,
-        paymentMethod: feeRecordsTable.paymentMethod,
-        schoolId: feeRecordsTable.schoolId,
-        createdAt: feeRecordsTable.createdAt,
-      })
+      .select(feeWithStudentSelect)
       .from(feeRecordsTable)
       .leftJoin(studentsTable, eq(feeRecordsTable.studentId, studentsTable.id))
       .leftJoin(classesTable, eq(studentsTable.classId, classesTable.id))
-      .where(and(eq(feeRecordsTable.schoolId, schoolId), eq(feeRecordsTable.status, "paid")))
+      .where(
+        and(
+          eq(feeRecordsTable.branchId, branchId),
+          eq(feeRecordsTable.sessionId, sessionId),
+          eq(feeRecordsTable.status, "paid"),
+        ),
+      )
       .orderBy(sql`${feeRecordsTable.paidDate} desc`)
       .limit(5),
   ]);

@@ -14,6 +14,7 @@ import {
   Droplets, GraduationCap, CheckCircle2, XCircle,
   Clock, MinusCircle, IndianRupee, CreditCard,
 } from "lucide-react";
+import { StudentDocumentsPanel } from "@/components/student-documents-panel";
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-500/15 text-emerald-600 border-emerald-500/20",
@@ -198,9 +199,14 @@ export default function StudentDetail() {
                       {age ? ` · Age ${age}` : ""}
                     </p>
                   </div>
-                  <Badge variant="outline" className={`capitalize ${STATUS_COLORS[student.status ?? "active"]}`}>
-                    {student.status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Link href={`/students/${studentId}/edit`}>
+                      <Button variant="outline" size="sm">Edit</Button>
+                    </Link>
+                    <Badge variant="outline" className={`capitalize ${STATUS_COLORS[student.status ?? "active"]}`}>
+                      {student.status}
+                    </Badge>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-4 mt-4">
@@ -404,6 +410,8 @@ export default function StudentDetail() {
             </CardContent>
           </Card>
         </div>
+
+        <StudentDocumentsPanel studentId={studentId} />
       </div>
     </Layout>
   );

@@ -1,5 +1,5 @@
 import { Layout } from "@/components/layout";
-import { useAuthStore } from "@/lib/auth";
+import { useScope } from "@/lib/use-scope";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -117,24 +117,23 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function Dashboard() {
-  const { user } = useAuthStore();
-  const schoolId = user?.schoolId || 1;
+  const { branchId } = useScope();
 
-  const { data: dashboard, isLoading } = useGetSchoolDashboard(schoolId, {
+  const { data: dashboard, isLoading } = useGetSchoolDashboard(branchId, {
     query: {
-      enabled: !!schoolId,
-      queryKey: getGetSchoolDashboardQueryKey(schoolId),
+      enabled: !!branchId,
+      queryKey: branchId ? getGetSchoolDashboardQueryKey(branchId) : ["dashboard-disabled"],
     },
   });
 
-  const { data: activity } = useGetRecentActivity(schoolId, { limit: 8 }, {
+  const { data: activity } = useGetRecentActivity(branchId, { limit: 8 }, {
     query: {
-      enabled: !!schoolId,
-      queryKey: getGetRecentActivityQueryKey(schoolId, { limit: 8 }),
+      enabled: !!branchId,
+      queryKey: branchId ? getGetRecentActivityQueryKey(branchId, { limit: 8 }) : ["activity-disabled"],
     },
   });
 
-  if (isLoading) {
+  if (!branchId || isLoading || !dashboard) {
     return (
       <Layout>
         <div className="space-y-6 animate-pulse">

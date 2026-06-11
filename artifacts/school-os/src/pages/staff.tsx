@@ -21,6 +21,13 @@ const ROLE_COLORS: Record<string, string> = {
   support: "bg-zinc-500/15 text-zinc-600 border-zinc-500/20",
 };
 
+const emptyForm = {
+  firstName: "", lastName: "", role: "teacher", email: "", phone: "",
+  subject: "", salary: "", employeeId: "", gender: "male", dob: "",
+  joiningDate: "", designation: "", staffType: "teaching", qualification: "",
+  professionalQualification: "", appointmentType: "regular", salaryReference: "",
+};
+
 export default function Staff() {
   const { user } = useAuthStore();
   const schoolId = user?.schoolId || 1;
@@ -32,18 +39,16 @@ export default function Staff() {
     query: { queryKey: getListStaffQueryKey(schoolId, { search: search || undefined }) },
   });
 
+  const [form, setForm] = useState(emptyForm);
+
   const createStaff = useCreateStaff({
     mutation: {
       onSuccess: () => {
         qc.invalidateQueries({ queryKey: getListStaffQueryKey(schoolId) });
         setOpen(false);
-        setForm({ firstName: "", lastName: "", role: "teacher", email: "", phone: "", subject: "", salary: "" });
+        setForm(emptyForm);
       },
     },
-  });
-
-  const [form, setForm] = useState({
-    firstName: "", lastName: "", role: "teacher", email: "", phone: "", subject: "", salary: "",
   });
 
   const field = (key: keyof typeof form, val: string) => setForm((f) => ({ ...f, [key]: val }));
@@ -52,7 +57,14 @@ export default function Staff() {
     e.preventDefault();
     createStaff.mutate({
       schoolId,
-      data: { ...form, role: form.role as any, salary: form.salary ? Number(form.salary) : undefined },
+      data: {
+        ...form,
+        role: form.role,
+        salary: form.salary ? Number(form.salary) : undefined,
+        gender: form.gender as "male" | "female" | "other",
+        staffType: form.staffType as "teaching" | "non_teaching",
+        appointmentType: form.appointmentType as "regular" | "contract" | "guest",
+      },
     });
   };
 
@@ -70,19 +82,12 @@ export default function Staff() {
             <DialogTrigger asChild>
               <Button className="gap-2"><Plus className="h-4 w-4" />Add Staff</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Add Staff Member</DialogTitle>
-              </DialogHeader>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>Add Staff Member (UDISE)</DialogTitle></DialogHeader>
               <form onSubmit={handleSubmit} className="grid gap-4 grid-cols-2 pt-2">
-                <div className="space-y-1.5">
-                  <Label>First Name</Label>
-                  <Input required value={form.firstName} onChange={(e) => field("firstName", e.target.value)} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Last Name</Label>
-                  <Input required value={form.lastName} onChange={(e) => field("lastName", e.target.value)} />
-                </div>
+                <div className="space-y-1.5"><Label>First Name</Label><Input required value={form.firstName} onChange={(e) => field("firstName", e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Last Name</Label><Input required value={form.lastName} onChange={(e) => field("lastName", e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Employee ID</Label><Input value={form.employeeId} onChange={(e) => field("employeeId", e.target.value)} /></div>
                 <div className="space-y-1.5">
                   <Label>Role</Label>
                   <Select value={form.role} onValueChange={(v) => field("role", v)}>
@@ -94,26 +99,50 @@ export default function Staff() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-1.5"><Label>Mobile</Label><Input required value={form.phone} onChange={(e) => field("phone", e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Email</Label><Input type="email" required value={form.email} onChange={(e) => field("email", e.target.value)} /></div>
                 <div className="space-y-1.5">
-                  <Label>Email</Label>
-                  <Input type="email" required value={form.email} onChange={(e) => field("email", e.target.value)} />
+                  <Label>Gender</Label>
+                  <Select value={form.gender} onValueChange={(v) => field("gender", v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5"><Label>Date of Birth</Label><Input type="date" value={form.dob} onChange={(e) => field("dob", e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Joining Date</Label><Input type="date" value={form.joiningDate} onChange={(e) => field("joiningDate", e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Designation</Label><Input value={form.designation} onChange={(e) => field("designation", e.target.value)} /></div>
+                <div className="space-y-1.5">
+                  <Label>Staff Type</Label>
+                  <Select value={form.staffType} onValueChange={(v) => field("staffType", v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="teaching">Teaching</SelectItem>
+                      <SelectItem value="non_teaching">Non Teaching</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Phone</Label>
-                  <Input value={form.phone} onChange={(e) => field("phone", e.target.value)} />
+                  <Label>Appointment Type</Label>
+                  <Select value={form.appointmentType} onValueChange={(v) => field("appointmentType", v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="regular">Regular</SelectItem>
+                      <SelectItem value="contract">Contract</SelectItem>
+                      <SelectItem value="guest">Guest</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Subject</Label>
-                  <Input value={form.subject} onChange={(e) => field("subject", e.target.value)} />
-                </div>
-                <div className="col-span-2 space-y-1.5">
-                  <Label>Salary (monthly)</Label>
-                  <Input type="number" value={form.salary} onChange={(e) => field("salary", e.target.value)} placeholder="e.g. 45000" />
-                </div>
+                <div className="space-y-1.5"><Label>Qualification</Label><Input value={form.qualification} onChange={(e) => field("qualification", e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Professional Qualification</Label><Input value={form.professionalQualification} onChange={(e) => field("professionalQualification", e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Subject Taught</Label><Input value={form.subject} onChange={(e) => field("subject", e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Salary Reference</Label><Input value={form.salaryReference} onChange={(e) => field("salaryReference", e.target.value)} /></div>
+                <div className="col-span-2 space-y-1.5"><Label>Salary (monthly)</Label><Input type="number" value={form.salary} onChange={(e) => field("salary", e.target.value)} /></div>
                 <div className="col-span-2 flex gap-3">
-                  <Button type="submit" disabled={createStaff.isPending}>
-                    {createStaff.isPending ? "Saving..." : "Add Staff"}
-                  </Button>
+                  <Button type="submit" disabled={createStaff.isPending}>{createStaff.isPending ? "Saving..." : "Add Staff"}</Button>
                   <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
                 </div>
               </form>
@@ -143,9 +172,8 @@ export default function Staff() {
                     <TableHead className="pl-6">Name</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
+                    <TableHead>Mobile</TableHead>
                     <TableHead>Subject</TableHead>
-                    <TableHead>Salary</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -160,18 +188,11 @@ export default function Staff() {
                           <span className="font-medium">{m.firstName} {m.lastName}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={`text-xs capitalize ${ROLE_COLORS[m.role] ?? ""}`}>{m.role}</Badge>
-                      </TableCell>
+                      <TableCell><Badge variant="outline" className={`text-xs capitalize ${ROLE_COLORS[m.role] ?? ""}`}>{m.role}</Badge></TableCell>
                       <TableCell className="text-muted-foreground text-sm">{m.email}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{m.phone ?? "—"}</TableCell>
                       <TableCell>{m.subject ?? "—"}</TableCell>
-                      <TableCell>{m.salary ? `₹${Number(m.salary).toLocaleString()}` : "—"}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={m.status === "active" ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/20 text-xs" : "text-xs"}>
-                          {m.status}
-                        </Badge>
-                      </TableCell>
+                      <TableCell><Badge variant="outline" className={m.status === "active" ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/20 text-xs" : "text-xs"}>{m.status}</Badge></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

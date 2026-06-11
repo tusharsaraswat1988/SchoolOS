@@ -1,15 +1,93 @@
 import { Router } from "express";
-import { db, schoolsTable, studentsTable, staffTable, feeRecordsTable, attendanceTable, classesTable, activityTable } from "@workspace/db";
-import { eq, sql, and, desc } from "drizzle-orm";
+import {
+  academicSessionsTable,
+  attendanceRecordsTable,
+  auditLogsTable,
+  branchesTable,
+  classesTable,
+  db,
+  feeRecordsTable,
+  rolesTable,
+  schoolsTable,
+  sectionsTable,
+  societiesTable,
+  studentsTable,
+  usersTable,
+} from "@workspace/db";
+import { and, desc, eq, sql } from "drizzle-orm";
+import { resolveBranchScope, resolveSessionScope } from "../lib/scope";
+import { mapAuditEventResponse, mapClassResponse } from "../lib/response-mappers";
 
 const router = Router();
 
-router.get("/schools/:schoolId/dashboard", async (req, res) => {
-  const schoolId = Number(req.params.schoolId);
+router.get("/platform/dashboard", async (_req, res) => {
+  const [
+    societyStats,
+    schoolStats,
+    studentStats,
+    teacherStats,
+    sessionStats,
+  ] = await Promise.all([
+    db.select({ total: sql<number>`count(*)` }).from(societiesTable),
+    db.select({ total: sql<number>`count(*)` }).from(schoolsTable),
+    db
+      .select({ total: sql<number>`count(*)` })
+      .from(studentsTable)
+      .where(eq(studentsTable.status, "active")),
+    db
+      .select({ total: sql<number>`count(*)` })
+      .from(usersTable)
+      .innerJoin(rolesTable, eq(usersTable.roleId, rolesTable.id))
+      .where(and(eq(rolesTable.key, "teacher"), eq(usersTable.status, "active"))),
+    db
+      .select({ total: sql<number>`count(*)` })
+      .from(academicSessionsTable)
+      .where(eq(academicSessionsTable.isCurrent, true)),
+  ]);
+
+  return res.json({
+    totalSocieties: Number(societyStats[0]?.total ?? 0),
+    totalSchools: Number(schoolStats[0]?.total ?? 0),
+    totalStudents: Number(studentStats[0]?.total ?? 0),
+    totalTeachers: Number(teacherStats[0]?.total ?? 0),
+    activeSessions: Number(sessionStats[0]?.total ?? 0),
+    totalBranches: Number(
+      (
+        await db.select({ total: sql<number>`count(*)` }).from(branchesTable)
+      )[0]?.total ?? 0,
+    ),
+    totalUsers: Number(
+      (await db.select({ total: sql<number>`count(*)` }).from(usersTable))[0]?.total ?? 0,
+    ),
+  });
+});
+
+router.get("/branches/:branchId/dashboard", async (req, res) => {
+  const branchId = Number(req.params.branchId);
+  const scope = await resolveBranchScope(branchId);
+  if (!scope) return res.status(404).json({ error: "Branch not found" });
+
+  const sessionId = req.query.sessionId ? Number(req.query.sessionId) : undefined;
   const today = new Date().toISOString().split("T")[0];
 
+  const studentConditions = [eq(studentsTable.branchId, branchId), eq(studentsTable.status, "active")];
+  const feeConditions = [eq(feeRecordsTable.branchId, branchId)];
+  const attendanceConditions = [
+    eq(attendanceRecordsTable.branchId, branchId),
+    eq(attendanceRecordsTable.attendanceDate, today),
+  ];
+  const classConditions = [eq(classesTable.branchId, branchId)];
+
+  if (sessionId) {
+    studentConditions.push(eq(studentsTable.sessionId, sessionId));
+    feeConditions.push(eq(feeRecordsTable.sessionId, sessionId));
+    attendanceConditions.push(eq(attendanceRecordsTable.sessionId, sessionId));
+    classConditions.push(eq(classesTable.sessionId, sessionId));
+  }
+
   const [
-    school,
+    studentCountResult,
+    staffCountResult,
     feeStats,
     attendanceStats,
     classes,
@@ -17,7 +95,14 @@ router.get("/schools/:schoolId/dashboard", async (req, res) => {
     upcomingBirthdays,
     monthlyFeeData,
   ] = await Promise.all([
-    db.select().from(schoolsTable).where(eq(schoolsTable.id, schoolId)).limit(1),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(studentsTable)
+      .where(and(...studentConditions)),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(usersTable)
+      .where(and(eq(usersTable.branchId, branchId), eq(usersTable.status, "active"))),
     db
       .select({
         totalExpected: sql<number>`sum(${feeRecordsTable.amount} - coalesce(${feeRecordsTable.discount}, 0))`,
@@ -25,31 +110,37 @@ router.get("/schools/:schoolId/dashboard", async (req, res) => {
         totalPending: sql<number>`sum(case when ${feeRecordsTable.status} in ('pending', 'partial') then ${feeRecordsTable.amount} - coalesce(${feeRecordsTable.discount}, 0) - coalesce(${feeRecordsTable.paidAmount}, 0) else 0 end)`,
       })
       .from(feeRecordsTable)
-      .where(eq(feeRecordsTable.schoolId, schoolId)),
+      .where(and(...feeConditions)),
     db
       .select({
-        status: attendanceTable.status,
+        status: attendanceRecordsTable.status,
         count: sql<number>`count(*)`,
       })
-      .from(attendanceTable)
-      .where(and(eq(attendanceTable.schoolId, schoolId), eq(attendanceTable.date, today)))
-      .groupBy(attendanceTable.status),
+      .from(attendanceRecordsTable)
+      .where(and(...attendanceConditions))
+      .groupBy(attendanceRecordsTable.status),
     db
       .select({
         id: classesTable.id,
+        code: classesTable.code,
         name: classesTable.name,
-        section: classesTable.section,
-        grade: classesTable.grade,
-        classTeacherId: classesTable.classTeacherId,
-        classTeacherName: sql<string>`null`,
-        schoolId: classesTable.schoolId,
-        capacity: classesTable.capacity,
+        gradeOrder: classesTable.gradeOrder,
+        classTeacherUserId: classesTable.classTeacherUserId,
+        classTeacherName: usersTable.name,
+        branchId: classesTable.branchId,
+        sessionId: classesTable.sessionId,
         studentCount: sql<number>`count(distinct ${studentsTable.id})`,
+        sectionCount: sql<number>`count(distinct ${sectionsTable.id})`,
       })
       .from(classesTable)
-      .leftJoin(studentsTable, and(eq(studentsTable.classId, classesTable.id), eq(studentsTable.status, "active")))
-      .where(eq(classesTable.schoolId, schoolId))
-      .groupBy(classesTable.id)
+      .leftJoin(usersTable, eq(classesTable.classTeacherUserId, usersTable.id))
+      .leftJoin(
+        studentsTable,
+        and(eq(studentsTable.classId, classesTable.id), eq(studentsTable.status, "active")),
+      )
+      .leftJoin(sectionsTable, eq(sectionsTable.classId, classesTable.id))
+      .where(and(...classConditions))
+      .groupBy(classesTable.id, usersTable.name)
       .limit(10),
     db
       .select({
@@ -67,25 +158,25 @@ router.get("/schools/:schoolId/dashboard", async (req, res) => {
         paidDate: feeRecordsTable.paidDate,
         receiptNumber: feeRecordsTable.receiptNumber,
         paymentMethod: feeRecordsTable.paymentMethod,
-        schoolId: feeRecordsTable.schoolId,
+        branchId: feeRecordsTable.branchId,
         createdAt: feeRecordsTable.createdAt,
       })
       .from(feeRecordsTable)
       .leftJoin(studentsTable, eq(feeRecordsTable.studentId, studentsTable.id))
       .leftJoin(classesTable, eq(studentsTable.classId, classesTable.id))
-      .where(and(eq(feeRecordsTable.schoolId, schoolId), eq(feeRecordsTable.status, "paid")))
+      .where(and(...feeConditions, eq(feeRecordsTable.status, "paid")))
       .orderBy(desc(feeRecordsTable.updatedAt))
       .limit(5),
     db
       .select({
         firstName: studentsTable.firstName,
         lastName: studentsTable.lastName,
-        dateOfBirth: studentsTable.dateOfBirth,
+        dob: studentsTable.dob,
         className: classesTable.name,
       })
       .from(studentsTable)
       .leftJoin(classesTable, eq(studentsTable.classId, classesTable.id))
-      .where(and(eq(studentsTable.schoolId, schoolId), eq(studentsTable.status, "active")))
+      .where(and(...studentConditions))
       .limit(5),
     db
       .select({
@@ -95,14 +186,18 @@ router.get("/schools/:schoolId/dashboard", async (req, res) => {
         pending: sql<number>`sum(case when ${feeRecordsTable.status} in ('pending', 'partial', 'overdue') then ${feeRecordsTable.amount} - coalesce(${feeRecordsTable.discount}, 0) - coalesce(${feeRecordsTable.paidAmount}, 0) else 0 end)`,
       })
       .from(feeRecordsTable)
-      .where(eq(feeRecordsTable.schoolId, schoolId))
-      .groupBy(sql`to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'Mon'), to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'YYYY-MM')`)
-      .orderBy(sql`to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'YYYY-MM')`)
+      .where(and(...feeConditions))
+      .groupBy(
+        sql`to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'Mon'), to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'YYYY-MM')`,
+      )
+      .orderBy(
+        sql`to_char(coalesce(${feeRecordsTable.paidDate}, ${feeRecordsTable.dueDate})::date, 'YYYY-MM')`,
+      )
       .limit(6),
   ]);
 
-  const totalStudents = school[0]?.studentCount ?? 0;
-  const totalStaff = school[0]?.staffCount ?? 0;
+  const totalStudents = Number(studentCountResult[0]?.count ?? 0);
+  const totalStaff = Number(staffCountResult[0]?.count ?? 0);
   const present = Number(attendanceStats.find((s) => s.status === "present")?.count ?? 0);
   const absent = Number(attendanceStats.find((s) => s.status === "absent")?.count ?? 0);
   const late = Number(attendanceStats.find((s) => s.status === "late")?.count ?? 0);
@@ -127,7 +222,7 @@ router.get("/schools/:schoolId/dashboard", async (req, res) => {
       lateToday: late,
       byClass: [],
     },
-    classBreakdown: classes,
+    classBreakdown: classes.map(mapClassResponse),
     monthlyFeeChart: monthlyFeeData.map((m) => ({
       month: m.month ?? "Unknown",
       collected: Number(m.collected ?? 0),
@@ -135,60 +230,70 @@ router.get("/schools/:schoolId/dashboard", async (req, res) => {
     })),
     upcomingBirthdays: upcomingBirthdays.map((s) => ({
       name: `${s.firstName} ${s.lastName}`,
-      date: s.dateOfBirth ?? "",
+      date: s.dob ?? "",
       className: s.className ?? "Unknown",
     })),
   });
 });
 
-router.get("/dashboard/super-admin", async (_req, res) => {
-  const [schools, schoolStats] = await Promise.all([
-    db.select().from(schoolsTable).orderBy(desc(schoolsTable.createdAt)).limit(5),
+router.get("/societies/:societyId/dashboard", async (req, res) => {
+  const societyId = Number(req.params.societyId);
+
+  const [schools, schoolStats, branchStats] = await Promise.all([
+    db
+      .select()
+      .from(schoolsTable)
+      .where(eq(schoolsTable.societyId, societyId))
+      .orderBy(desc(schoolsTable.createdAt))
+      .limit(5),
     db
       .select({
         totalSchools: sql<number>`count(*)`,
         activeSchools: sql<number>`sum(case when ${schoolsTable.status} = 'active' then 1 else 0 end)`,
-        totalStudents: sql<number>`sum(${schoolsTable.studentCount})`,
       })
-      .from(schoolsTable),
+      .from(schoolsTable)
+      .where(eq(schoolsTable.societyId, societyId)),
+    db
+      .select({
+        totalBranches: sql<number>`count(*)`,
+        activeBranches: sql<number>`sum(case when ${branchesTable.status} = 'active' then 1 else 0 end)`,
+      })
+      .from(branchesTable)
+      .where(eq(branchesTable.societyId, societyId)),
   ]);
 
-  const s = schoolStats[0];
+  const [studentStats] = await db
+    .select({ totalStudents: sql<number>`count(*)` })
+    .from(studentsTable)
+    .where(eq(studentsTable.societyId, societyId));
 
-  const subscriptionBreakdown = await db
-    .select({
-      plan: schoolsTable.subscriptionPlan,
-      count: sql<number>`count(*)`,
-    })
-    .from(schoolsTable)
-    .groupBy(schoolsTable.subscriptionPlan);
+  const s = schoolStats[0];
+  const b = branchStats[0];
 
   return res.json({
     totalSchools: Number(s.totalSchools ?? 0),
     activeSchools: Number(s.activeSchools ?? 0),
-    totalStudents: Number(s.totalStudents ?? 0),
+    totalBranches: Number(b.totalBranches ?? 0),
+    activeBranches: Number(b.activeBranches ?? 0),
+    totalStudents: Number(studentStats.totalStudents ?? 0),
     totalRevenue: 0,
     recentSchools: schools,
-    subscriptionBreakdown: subscriptionBreakdown.map((b) => ({
-      plan: b.plan,
-      count: Number(b.count),
-    })),
     monthlyGrowth: [],
   });
 });
 
-router.get("/schools/:schoolId/dashboard/activity", async (req, res) => {
-  const schoolId = Number(req.params.schoolId);
+router.get("/branches/:branchId/audit-events", async (req, res) => {
+  const branchId = Number(req.params.branchId);
   const limit = Number(req.query.limit) || 10;
 
-  const activities = await db
+  const events = await db
     .select()
-    .from(activityTable)
-    .where(eq(activityTable.schoolId, schoolId))
-    .orderBy(desc(activityTable.createdAt))
+    .from(auditLogsTable)
+    .where(eq(auditLogsTable.branchId, branchId))
+    .orderBy(desc(auditLogsTable.createdAt))
     .limit(limit);
 
-  return res.json(activities);
+  return res.json(events.map(mapAuditEventResponse));
 });
 
 export default router;

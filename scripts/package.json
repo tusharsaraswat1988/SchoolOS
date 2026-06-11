@@ -9,6 +9,8 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "dotenv": "^16.6.1",
+    "pg": "^8.20.0",
     "tsx": "catalog:"
   }
 }
