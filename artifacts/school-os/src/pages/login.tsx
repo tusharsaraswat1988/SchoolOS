@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AiCore } from "@/components/ai-core";
 import { CheckCircle2, GraduationCap, LogIn, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 
 export default function Login() {
@@ -93,8 +94,12 @@ export default function Login() {
       <div className="login-mesh login-mesh-c" />
 
       <div
-        className={`pointer-events-none absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/25 blur-2xl transition-all duration-700 ease-out ${
-          introStage === "form" ? "scale-[18] opacity-0" : "scale-100 opacity-75"
+        className={`pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/20 blur-3xl transition-all duration-[900ms] ease-out ${
+          introStage === "form"
+            ? "scale-[16] opacity-0"
+            : introStage === "expanding"
+              ? "scale-150 opacity-90"
+              : "scale-100 opacity-70"
         }`}
       />
 
@@ -102,28 +107,38 @@ export default function Login() {
         type="button"
         onClick={startExperience}
         aria-label="Open School OS login"
-        className={`absolute left-1/2 top-1/2 z-20 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/30 bg-card/90 text-center shadow-[0_0_0_1px_hsl(var(--primary)/0.18),0_22px_65px_hsl(var(--primary)/0.24)] backdrop-blur-md transition-all duration-700 ease-out hover:scale-[1.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-          introStage === "form" ? "pointer-events-none scale-150 opacity-0" : "scale-100 opacity-100"
+        className={`group absolute left-1/2 top-1/2 z-20 flex h-52 w-52 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-primary/25 bg-card/70 text-center shadow-[0_0_0_1px_hsl(var(--primary)/0.12),0_30px_80px_hsl(var(--primary)/0.22)] backdrop-blur-md transition-all duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          introStage === "form"
+            ? "pointer-events-none scale-[1.8] opacity-0"
+            : introStage === "expanding"
+              ? "scale-125 opacity-0"
+              : "scale-100 opacity-100"
         }`}
       >
         <span className="login-orb-ring" />
         <span className="login-orb-ring login-orb-ring-delay" />
-        <span className="login-orb-sheen" />
-        <span className="block text-lg font-semibold tracking-wide text-foreground">School OS</span>
-        <span className="mt-1 block text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
-          Tap to Enter
+        <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <AiCore size={184} charged={introStage !== "intro"} />
         </span>
-        <span className="mt-1 block text-[9px] uppercase tracking-[0.22em] text-primary/75">
-          AI POWERED ERP
+        <span className="pointer-events-none relative z-10 mt-1 flex flex-col items-center">
+          <span className="text-base font-semibold tracking-wide text-foreground drop-shadow-sm">
+            School OS
+          </span>
+          <span className="mt-1 text-[10px] uppercase tracking-[0.26em] text-muted-foreground">
+            Tap to Enter
+          </span>
+          <span className="mt-0.5 text-[9px] uppercase tracking-[0.24em] text-primary/80">
+            AI Powered ERP
+          </span>
         </span>
       </button>
 
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-6xl items-center justify-center">
         <div
-          className={`grid w-full overflow-hidden rounded-3xl border border-border/70 bg-card/80 shadow-2xl backdrop-blur-sm transition-all duration-700 ease-out md:grid-cols-[1.15fr_1fr] ${
+          className={`grid w-full origin-center overflow-hidden rounded-3xl border border-border/70 bg-card/80 shadow-2xl backdrop-blur-sm transition-all duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] md:grid-cols-[1.15fr_1fr] ${
             introStage === "form"
-              ? "login-panel-reveal scale-100 opacity-100"
-              : "pointer-events-none scale-95 opacity-0"
+              ? "login-panel-reveal scale-100 opacity-100 blur-0"
+              : "pointer-events-none scale-50 opacity-0 blur-md"
           }`}
         >
           <section className="hidden border-r border-border/60 bg-[linear-gradient(160deg,_hsl(var(--primary)/0.92),_hsl(var(--primary)/0.76))] p-10 text-primary-foreground md:flex md:flex-col md:justify-between">
