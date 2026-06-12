@@ -2,6 +2,7 @@ import {
   academicSessionsTable,
   branchesTable,
   db,
+  financialSessionsTable,
   schoolsTable,
   societiesTable,
 } from "@workspace/db";
@@ -65,6 +66,20 @@ export async function resolveCurrentSession(branchId: number) {
       and(
         eq(academicSessionsTable.branchId, branchId),
         eq(academicSessionsTable.isCurrent, true),
+      ),
+    )
+    .limit(1);
+  return session ?? null;
+}
+
+export async function resolveCurrentFinancialSession(branchId: number) {
+  const [session] = await db
+    .select()
+    .from(financialSessionsTable)
+    .where(
+      and(
+        eq(financialSessionsTable.branchId, branchId),
+        eq(financialSessionsTable.isCurrent, true),
       ),
     )
     .limit(1);

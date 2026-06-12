@@ -1,11 +1,12 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 
-const rawPort = process.env["PORT"];
+// API_PORT takes precedence so PORT=5173 (Vite) in .env does not bind the API to the web port.
+const rawPort = process.env["API_PORT"] ?? process.env["PORT"];
 
 if (!rawPort) {
   throw new Error(
-    "PORT environment variable is required but was not provided.",
+    "API_PORT or PORT environment variable is required but was not provided.",
   );
 }
 

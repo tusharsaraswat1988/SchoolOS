@@ -11,7 +11,10 @@
     "push": "drizzle-kit push --config ./drizzle.config.ts",
     "push-force": "drizzle-kit push --force --config ./drizzle.config.ts",
     "seed": "tsx ./src/seed-phase0-runner.ts",
-    "seed:phase0": "tsx ./src/seed-phase0-runner.ts"
+    "seed:phase0": "tsx ./src/seed-phase0-runner.ts",
+    "migrate:billing-sprint1": "tsx ./src/run-billing-sprint1-migration.ts",
+    "migrate:billing-m7-m8": "tsx ./src/run-billing-m7-m8-migration.ts",
+    "migrate:student-master-v2": "tsx ./src/migrate-student-master-v2-runner.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",

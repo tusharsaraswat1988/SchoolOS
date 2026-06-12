@@ -1,421 +1,263 @@
 import { useEffect, useState } from "react";
-
 import { useLocation, useParams } from "wouter";
-
 import { Layout } from "@/components/layout";
-
-import { useAuthStore } from "@/lib/auth";
-
+import { useOperationalScope } from "@/lib/use-scope";
 import {
-
   useCreateStudent,
-
   useGetStudent,
-
   useListClasses,
-
   useUpdateStudent,
-
   getListStudentsQueryKey,
-
   getGetStudentQueryKey,
-
 } from "@workspace/api-client-react";
-
 import { useQueryClient } from "@tanstack/react-query";
-
 import { Button } from "@/components/ui/button";
-
-import { Input } from "@/components/ui/input";
-
-import { Label } from "@/components/ui/label";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
+import { StudentIdentityTab, type IdentityFormState } from "@/components/student-master/identity-tab";
+import { StudentRelationsTab } from "@/components/student-master/relations-tab";
+import { StudentDocumentsTab } from "@/components/student-master/documents-tab";
+import { apiGet } from "@/lib/api";
 
-
-
-const emptyForm = {
-
-  firstName: "", lastName: "", gender: "male",
-
-  dateOfBirth: "", classId: "", rollNumber: "",
-
-  fatherName: "", motherName: "", guardianName: "",
-
-  parentPhone: "", parentEmail: "",
-
-  bloodGroup: "", admissionNumber: "", address: "",
-
-  socialCategory: "general", religion: "", aadhaar: "",
-
-  admissionDate: "", transportAssigned: false,
-
+const emptyForm: IdentityFormState = {
+  firstName: "",
+  middleName: "",
+  lastName: "",
+  gender: "male",
+  dateOfBirth: "",
+  bloodGroup: "",
+  registrationNumber: "",
+  admissionNumber: "",
+  rollNumber: "",
+  socialCategory: "general",
+  religion: "",
+  nationality: "Indian",
+  aadhaar: "",
+  penNumber: "",
+  apaarId: "",
+  udiseStudentId: "",
+  isRteStudent: false,
+  isCwsnStudent: false,
+  classId: "",
+  sectionId: "",
+  house: "",
+  admissionDate: "",
+  status: "active",
+  photoUrl: "",
+  signatureUrl: "",
+  address: "",
+  fatherName: "",
+  motherName: "",
+  parentPhone: "",
+  parentEmail: "",
 };
 
-
-
 export default function StudentForm() {
-
   const params = useParams<{ id?: string }>();
-
   const editId = params.id ? Number(params.id) : null;
-
   const isEdit = editId != null && !Number.isNaN(editId);
-
   const [, setLocation] = useLocation();
-
-  const { user } = useAuthStore();
-
-  const schoolId = user?.schoolId || 1;
-
+  const scope = useOperationalScope();
+  const branchId = scope?.branchId ?? 0;
+  const sessionId = scope?.sessionId ?? 0;
+  const schoolId = scope?.schoolId ?? 0;
   const qc = useQueryClient();
 
+  const initialTab =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("tab") ?? "student"
+      : "student";
+  const [tab, setTab] = useState(initialTab);
+  const [form, setForm] = useState(emptyForm);
+  const [sections, setSections] = useState<Array<{ id: number; name: string; classId: number }>>([]);
 
-
-  const { data: existing } = useGetStudent(schoolId, editId ?? 0, {
-
-    query: { enabled: isEdit, queryKey: getGetStudentQueryKey(schoolId, editId ?? 0) },
-
+  const { data: existing } = useGetStudent(branchId, sessionId, editId ?? 0, {
+    query: { enabled: isEdit && !!branchId && !!sessionId, queryKey: getGetStudentQueryKey(branchId, sessionId, editId ?? 0) },
   });
 
-
-
-  const { data: classes } = useListClasses(schoolId);
-
-  const [form, setForm] = useState(emptyForm);
-
-
+  const { data: classes } = useListClasses(branchId, sessionId, {
+    query: { enabled: !!branchId && !!sessionId, queryKey: [`classes`, branchId, sessionId] },
+  });
 
   useEffect(() => {
-
     if (!existing || !isEdit) return;
-
+    const ext = existing as unknown as Record<string, unknown>;
     setForm({
-
       firstName: existing.firstName ?? "",
-
+      middleName: String(ext.middleName ?? ""),
       lastName: existing.lastName ?? "",
-
       gender: existing.gender ?? "male",
-
       dateOfBirth: existing.dateOfBirth ? String(existing.dateOfBirth).slice(0, 10) : "",
-
-      classId: String(existing.classId ?? ""),
-
-      rollNumber: existing.rollNumber ?? "",
-
-      fatherName: existing.fatherName ?? "",
-
-      motherName: existing.motherName ?? "",
-
-      guardianName: "",
-
-      parentPhone: existing.parentPhone ?? "",
-
-      parentEmail: existing.parentEmail ?? "",
-
       bloodGroup: existing.bloodGroup ?? "",
-
+      registrationNumber: String(ext.registrationNumber ?? ""),
       admissionNumber: existing.admissionNumber ?? "",
-
-      address: existing.address ?? "",
-
+      rollNumber: existing.rollNumber ?? "",
       socialCategory: existing.category ?? "general",
-
-      religion: "",
-
-      aadhaar: "",
-
-      admissionDate: "",
-
-      transportAssigned: false,
-
+      religion: String(ext.religion ?? ""),
+      nationality: String(ext.nationality ?? "Indian"),
+      aadhaar: String(ext.aadhaar ?? ""),
+      penNumber: String(ext.penNumber ?? ""),
+      apaarId: String(ext.apaarId ?? ""),
+      udiseStudentId: String(ext.udiseStudentId ?? ""),
+      isRteStudent: Boolean(ext.isRteStudent),
+      isCwsnStudent: Boolean(ext.isCwsnStudent),
+      classId: String(existing.classId ?? ""),
+      sectionId: String(ext.sectionId ?? existing.section ?? ""),
+      house: String(ext.house ?? ""),
+      admissionDate: ext.admissionDate ? String(ext.admissionDate).slice(0, 10) : "",
+      status: existing.status ?? "active",
+      photoUrl: String(ext.photoUrl ?? ""),
+      signatureUrl: String(ext.signatureUrl ?? ""),
+      address: String(ext.address ?? ""),
+      fatherName: existing.fatherName ?? "",
+      motherName: existing.motherName ?? "",
+      parentPhone: existing.parentPhone ?? "",
+      parentEmail: existing.parentEmail ?? "",
     });
-
   }, [existing, isEdit]);
 
-
+  useEffect(() => {
+    if (!form.classId || !branchId || !sessionId) return;
+    apiGet<Array<{ id: number; name: string; classId: number }>>(
+      `/branches/${branchId}/sessions/${sessionId}/classes/${form.classId}/sections`,
+    )
+      .then((res) => setSections(Array.isArray(res) ? res : []))
+      .catch(() => setSections([]));
+  }, [form.classId, branchId, sessionId]);
 
   const createStudent = useCreateStudent({
-
     mutation: {
-
-      onSuccess: () => {
-
-        qc.invalidateQueries({ queryKey: getListStudentsQueryKey(schoolId) });
-
-        setLocation("/students");
-
+      onSuccess: (student) => {
+        qc.invalidateQueries({ queryKey: getListStudentsQueryKey(branchId, sessionId) });
+        setLocation(`/students/${student.id}/edit?tab=relations`);
       },
-
     },
-
   });
-
-
 
   const updateStudent = useUpdateStudent({
-
     mutation: {
-
       onSuccess: () => {
-
-        qc.invalidateQueries({ queryKey: getListStudentsQueryKey(schoolId) });
-
-        qc.invalidateQueries({ queryKey: getGetStudentQueryKey(schoolId, editId!) });
-
-        setLocation(`/students/${editId}`);
-
+        qc.invalidateQueries({ queryKey: getListStudentsQueryKey(branchId, sessionId) });
+        qc.invalidateQueries({ queryKey: getGetStudentQueryKey(branchId, sessionId, editId!) });
       },
-
     },
-
   });
 
+  const onChange = (key: keyof IdentityFormState, value: string | boolean) =>
+    setForm((f) => ({ ...f, [key]: value }));
 
+  const buildPayload = () => ({
+    firstName: form.firstName,
+    middleName: form.middleName || undefined,
+    lastName: form.lastName,
+    classId: Number(form.classId),
+    sectionId: form.sectionId ? Number(form.sectionId) : 1,
+    gender: form.gender as "male" | "female" | "other",
+    dateOfBirth: form.dateOfBirth,
+    rollNumber: form.rollNumber || undefined,
+    bloodGroup: form.bloodGroup || undefined,
+    registrationNumber: form.registrationNumber || undefined,
+    admissionNumber: form.admissionNumber || undefined,
+    socialCategory: form.socialCategory as "general" | "sc" | "st" | "obc" | "other",
+    religion: form.religion || undefined,
+    nationality: form.nationality || undefined,
+    aadhaar: form.aadhaar || undefined,
+    penNumber: form.penNumber || undefined,
+    apaarId: form.apaarId || undefined,
+    udiseStudentId: form.udiseStudentId || undefined,
+    isRteStudent: form.isRteStudent,
+    isCwsnStudent: form.isCwsnStudent,
+    house: form.house || undefined,
+    admissionDate: form.admissionDate || undefined,
+    status: form.status as "active" | "inactive" | "transferred" | "graduated",
+    photoUrl: form.photoUrl || undefined,
+    signatureUrl: form.signatureUrl || undefined,
+    address: form.address,
+    fatherName: form.fatherName,
+    motherName: form.motherName,
+    parentPhone: form.parentPhone,
+    parentEmail: form.parentEmail,
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-
+  const handleSaveIdentity = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const payload = {
-
-      ...form,
-
-      classId: Number(form.classId),
-
-      gender: form.gender as "male" | "female" | "other",
-
-      socialCategory: form.socialCategory as "general" | "sc" | "st" | "obc" | "other",
-
-      admissionNumber: form.admissionNumber || `ADM-${Date.now()}`,
-
-    };
-
+    const payload = buildPayload();
     if (isEdit && editId) {
-
-      updateStudent.mutate({ branchId: 1, sessionId: 1, studentId: editId, data: payload });
-
+      updateStudent.mutate({ branchId, sessionId, studentId: editId, data: payload });
     } else {
-
-      createStudent.mutate({ schoolId, data: payload });
-
+      createStudent.mutate({ branchId, sessionId, data: payload });
     }
-
   };
-
-
-
-  const field = (key: keyof typeof form, val: string | boolean) => setForm((f) => ({ ...f, [key]: val }));
 
   const pending = createStudent.isPending || updateStudent.isPending;
 
-
+  if (!scope) {
+    return (
+      <Layout>
+        <p className="text-muted-foreground">Select a branch and session to manage students.</p>
+      </Layout>
+    );
+  }
 
   return (
-
     <Layout>
-
-      <div className="space-y-6 max-w-2xl">
-
+      <div className="space-y-6 max-w-4xl">
         <div className="flex items-center gap-3">
-
           <Button variant="ghost" size="icon" onClick={() => setLocation(isEdit ? `/students/${editId}` : "/students")}>
-
             <ArrowLeft className="h-4 w-4" />
-
           </Button>
-
           <div>
-
-            <h1 className="text-2xl font-bold tracking-tight">{isEdit ? "Edit Student" : "Add Student"}</h1>
-
-            <p className="text-muted-foreground text-sm">UDISE Phase-1 student master fields</p>
-
+            <h1 className="text-2xl font-bold tracking-tight">
+              {isEdit ? "Student Master" : "Add Student"}
+            </h1>
+            <p className="text-muted-foreground text-sm">Identity · Relations · Documents</p>
           </div>
-
         </div>
 
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList>
+            <TabsTrigger value="student">Student</TabsTrigger>
+            <TabsTrigger value="relations" disabled={!isEdit}>Relations</TabsTrigger>
+            <TabsTrigger value="documents" disabled={!isEdit}>Documents</TabsTrigger>
+          </TabsList>
 
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-
-          <Card>
-
-            <CardHeader><CardTitle className="text-base">Personal Information</CardTitle></CardHeader>
-
-            <CardContent className="grid gap-4 grid-cols-2">
-
-              <div className="space-y-1.5"><Label>First Name</Label><Input required value={form.firstName} onChange={(e) => field("firstName", e.target.value)} /></div>
-
-              <div className="space-y-1.5"><Label>Last Name</Label><Input required value={form.lastName} onChange={(e) => field("lastName", e.target.value)} /></div>
-
-              <div className="space-y-1.5">
-
-                <Label>Gender</Label>
-
-                <Select value={form.gender} onValueChange={(v) => field("gender", v)}>
-
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-
-                  <SelectContent>
-
-                    <SelectItem value="male">Male</SelectItem>
-
-                    <SelectItem value="female">Female</SelectItem>
-
-                    <SelectItem value="other">Other</SelectItem>
-
-                  </SelectContent>
-
-                </Select>
-
+          <TabsContent value="student" className="mt-6">
+            <form onSubmit={handleSaveIdentity} className="space-y-6">
+              <StudentIdentityTab
+                form={form}
+                onChange={onChange}
+                classes={classes ?? []}
+                sections={sections}
+                isEdit={isEdit}
+              />
+              <div className="flex gap-3">
+                <Button type="submit" disabled={pending}>
+                  {pending ? "Saving..." : isEdit ? "Save Student" : "Create Student"}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setLocation(isEdit ? `/students/${editId}` : "/students")}>
+                  Cancel
+                </Button>
               </div>
-
-              <div className="space-y-1.5"><Label>Date of Birth</Label><Input type="date" required value={form.dateOfBirth} onChange={(e) => field("dateOfBirth", e.target.value)} /></div>
-
-              <div className="space-y-1.5"><Label>Roll Number</Label><Input value={form.rollNumber} onChange={(e) => field("rollNumber", e.target.value)} /></div>
-
-              <div className="space-y-1.5"><Label>Blood Group</Label><Input value={form.bloodGroup} onChange={(e) => field("bloodGroup", e.target.value)} /></div>
-
-              {!isEdit && (
-
-                <div className="space-y-1.5"><Label>Admission Number</Label><Input value={form.admissionNumber} onChange={(e) => field("admissionNumber", e.target.value)} placeholder="Auto-generated if empty" /></div>
-
-              )}
-
-            </CardContent>
-
-          </Card>
-
-
-
-          <Card>
-
-            <CardHeader><CardTitle className="text-base">Academic Details</CardTitle></CardHeader>
-
-            <CardContent className="grid gap-4">
-
-              <div className="space-y-1.5">
-
-                <Label>Class</Label>
-
-                <Select required value={form.classId} onValueChange={(v) => field("classId", v)}>
-
-                  <SelectTrigger><SelectValue placeholder="Select class" /></SelectTrigger>
-
-                  <SelectContent>
-
-                    {(classes ?? []).map((c) => (
-
-                      <SelectItem key={c.id} value={String(c.id)}>{c.name}{c.section ? ` - ${c.section}` : ""}</SelectItem>
-
-                    ))}
-
-                  </SelectContent>
-
-                </Select>
-
-              </div>
-
-              <div className="space-y-1.5"><Label>Admission Date</Label><Input type="date" value={form.admissionDate} onChange={(e) => field("admissionDate", e.target.value)} /></div>
-
-              <div className="space-y-1.5">
-
-                <Label>Social Category</Label>
-
-                <Select value={form.socialCategory} onValueChange={(v) => field("socialCategory", v)}>
-
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-
-                  <SelectContent>
-
-                    {["general", "sc", "st", "obc", "other"].map((v) => (
-
-                      <SelectItem key={v} value={v}>{v.toUpperCase()}</SelectItem>
-
-                    ))}
-
-                  </SelectContent>
-
-                </Select>
-
-              </div>
-
-              <div className="space-y-1.5"><Label>Religion</Label><Input value={form.religion} onChange={(e) => field("religion", e.target.value)} /></div>
-
-              <div className="space-y-1.5"><Label>Aadhaar (optional)</Label><Input value={form.aadhaar} onChange={(e) => field("aadhaar", e.target.value)} /></div>
-
-            </CardContent>
-
-          </Card>
-
-
-
-          <Card>
-
-            <CardHeader><CardTitle className="text-base">Address & Transport</CardTitle></CardHeader>
-
-            <CardContent className="grid gap-4">
-
-              <div className="space-y-1.5"><Label>Address</Label><Input required value={form.address} onChange={(e) => field("address", e.target.value)} /></div>
-
-              <label className="flex items-center gap-2 text-sm">
-
-                <input type="checkbox" checked={form.transportAssigned} onChange={(e) => field("transportAssigned", e.target.checked)} />
-
-                Transport assigned
-
-              </label>
-
-            </CardContent>
-
-          </Card>
-
-
-
-          <Card>
-
-            <CardHeader><CardTitle className="text-base">Parent / Guardian</CardTitle></CardHeader>
-
-            <CardContent className="grid gap-4 grid-cols-2">
-
-              <div className="space-y-1.5"><Label>Father's Name</Label><Input required value={form.fatherName} onChange={(e) => field("fatherName", e.target.value)} /></div>
-
-              <div className="space-y-1.5"><Label>Mother's Name</Label><Input required value={form.motherName} onChange={(e) => field("motherName", e.target.value)} /></div>
-
-              <div className="space-y-1.5"><Label>Guardian Name</Label><Input value={form.guardianName} onChange={(e) => field("guardianName", e.target.value)} /></div>
-
-              <div className="space-y-1.5"><Label>Parent Mobile</Label><Input required value={form.parentPhone} onChange={(e) => field("parentPhone", e.target.value)} placeholder="+91-9876543210" /></div>
-
-              <div className="space-y-1.5"><Label>Parent Email</Label><Input type="email" required value={form.parentEmail} onChange={(e) => field("parentEmail", e.target.value)} /></div>
-
-            </CardContent>
-
-          </Card>
-
-
-
-          <div className="flex gap-3">
-
-            <Button type="submit" disabled={pending}>{pending ? "Saving..." : isEdit ? "Save Changes" : "Add Student"}</Button>
-
-            <Button type="button" variant="outline" onClick={() => setLocation(isEdit ? `/students/${editId}` : "/students")}>Cancel</Button>
-
-          </div>
-
-        </form>
-
+            </form>
+          </TabsContent>
+
+          {isEdit && editId && (
+            <>
+              <TabsContent value="relations" className="mt-6">
+                <StudentRelationsTab
+                  branchId={branchId}
+                  sessionId={sessionId}
+                  studentId={editId}
+                  schoolId={schoolId}
+                />
+              </TabsContent>
+              <TabsContent value="documents" className="mt-6">
+                <StudentDocumentsTab branchId={branchId} sessionId={sessionId} studentId={editId} />
+              </TabsContent>
+            </>
+          )}
+        </Tabs>
       </div>
-
     </Layout>
-
   );
-
 }
-
-

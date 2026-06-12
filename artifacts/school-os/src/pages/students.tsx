@@ -13,6 +13,10 @@ import { Search, Plus, UserCircle, Pencil, Trash2 } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-emerald-500/15 text-emerald-600 border-emerald-500/20",
+  left: "bg-zinc-500/15 text-zinc-500 border-zinc-500/20",
+  tc_issued: "bg-amber-500/15 text-amber-600 border-amber-500/20",
+  alumni: "bg-blue-500/15 text-blue-600 border-blue-500/20",
+  suspended: "bg-red-500/15 text-red-600 border-red-500/20",
   inactive: "bg-zinc-500/15 text-zinc-500 border-zinc-500/20",
   graduated: "bg-blue-500/15 text-blue-600 border-blue-500/20",
   transferred: "bg-amber-500/15 text-amber-600 border-amber-500/20",
@@ -49,12 +53,17 @@ export default function Students() {
               {data?.total ?? 0} students enrolled
             </p>
           </div>
+          <div className="flex gap-2">
+          <Link href="/student-documents">
+            <Button variant="outline">Doc Dashboard</Button>
+          </Link>
           <Link href="/students/new">
             <Button className="gap-2">
               <Plus className="h-4 w-4" />
               Add Student
             </Button>
           </Link>
+          </div>
         </div>
 
         <Card>
@@ -89,16 +98,17 @@ export default function Students() {
                 <TableHeader>
                   <TableRow className="border-b bg-muted/30">
                     <TableHead className="pl-6">Student</TableHead>
-                    <TableHead>Admission No.</TableHead>
+                    <TableHead>Reg / Admission</TableHead>
                     <TableHead>Class</TableHead>
                     <TableHead>Gender</TableHead>
-                    <TableHead>Parent Phone</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right pr-6">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {students.map((s) => (
+                  {students.map((s) => {
+                    const ext = s as unknown as Record<string, unknown>;
+                    return (
                     <TableRow key={s.id} className="hover:bg-muted/20 transition-colors">
                       <TableCell className="pl-6">
                         <div className="flex items-center gap-3">
@@ -115,13 +125,15 @@ export default function Students() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono text-sm">{s.admissionNumber}</TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {ext.registrationNumber ? <div>{String(ext.registrationNumber)}</div> : null}
+                        <div className="text-muted-foreground">{s.admissionNumber}</div>
+                      </TableCell>
                       <TableCell>{s.className ?? "—"}</TableCell>
                       <TableCell className="capitalize">{s.gender}</TableCell>
-                      <TableCell className="text-muted-foreground">{s.parentPhone ?? "—"}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-xs capitalize ${STATUS_COLORS[s.status ?? "active"]}`}>
-                          {s.status}
+                          {(s.status ?? "active").replace("_", " ")}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right pr-6">
@@ -142,7 +154,8 @@ export default function Students() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}

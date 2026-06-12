@@ -1,6 +1,7 @@
 import { date, index, integer, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { entityStatusEnum } from "./enums";
 import { academicSessionsTable } from "./academic-sessions";
+import { financialSessionsTable } from "./financial-sessions";
 import { branchesTable } from "./branches";
 import { classesTable } from "./classes";
 import { schoolsTable } from "./schools";
@@ -52,6 +53,9 @@ export const feeStructuresTable = pgTable(
     sessionId: integer("session_id")
       .notNull()
       .references(() => academicSessionsTable.id, { onDelete: "cascade" }),
+    financialSessionId: integer("financial_session_id").references(() => financialSessionsTable.id, {
+      onDelete: "cascade",
+    }),
     classId: integer("class_id")
       .notNull()
       .references(() => classesTable.id, { onDelete: "cascade" }),
@@ -60,7 +64,9 @@ export const feeStructuresTable = pgTable(
       .references(() => feeHeadsTable.id, { onDelete: "cascade" }),
     amount: integer("amount").notNull(),
     dueDayOfMonth: integer("due_day_of_month"),
-    effectiveFrom: date("effective_from"),
+    effectiveFrom: date("effective_from").notNull(),
+    effectiveTo: date("effective_to"),
+    billingMonths: integer("billing_months").array(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
@@ -70,10 +76,11 @@ export const feeStructuresTable = pgTable(
     updatedBy: integer("updated_by"),
   },
   (table) => ({
-    classHeadUq: uniqueIndex("fee_structures_class_head_uq").on(
+    classHeadEffectiveUq: uniqueIndex("fee_structures_class_head_effective_uq").on(
       table.sessionId,
       table.classId,
       table.feeHeadId,
+      table.effectiveFrom,
     ),
     branchIdx: index("fee_structures_branch_idx").on(table.branchId),
   }),

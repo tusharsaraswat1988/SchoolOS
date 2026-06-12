@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
 import { Link } from "wouter";
+import { useGetPlatformDashboard } from "@workspace/api-client-react";
 import { Layout } from "@/components/layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PLATFORM_NAV_SECTIONS } from "@/lib/platform-navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, GraduationCap, School, Users } from "lucide-react";
 
 type PlatformStats = {
@@ -15,67 +16,77 @@ type PlatformStats = {
 };
 
 export default function PlatformDashboard() {
-  const [stats, setStats] = useState<PlatformStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading, isError } = useGetPlatformDashboard({
+    query: {
+      select: (response) => response as unknown as PlatformStats,
+    },
+  });
 
-  useEffect(() => {
-    fetch("/api/platform/dashboard")
-      .then((r) => r.json())
-      .then((data: PlatformStats) => {
-        setStats(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const items = stats
+  const items = data
     ? [
-        { label: "Total Societies", value: stats.totalSocieties, icon: Building },
-        { label: "Total Schools", value: stats.totalSchools, icon: School },
-        { label: "Total Students", value: stats.totalStudents, icon: GraduationCap },
-        { label: "Total Teachers", value: stats.totalTeachers, icon: Users },
-        { label: "Active Sessions", value: stats.activeSessions, icon: GraduationCap },
-        { label: "Total Branches", value: stats.totalBranches, icon: Building },
+        { label: "Total Societies", value: data.totalSocieties, icon: Building },
+        { label: "Total Schools", value: data.totalSchools, icon: School },
+        { label: "Total Students", value: data.totalStudents, icon: GraduationCap },
+        { label: "Total Teachers", value: data.totalTeachers, icon: Users },
+        { label: "Active Sessions", value: data.activeSessions, icon: GraduationCap },
+        { label: "Total Branches", value: data.totalBranches, icon: Building },
       ]
     : [];
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Platform Overview</h1>
-          <p className="text-muted-foreground mt-1">System-wide statistics across all tenants</p>
+          <h1 className="text-3xl font-bold tracking-tight">Platform Dashboard</h1>
+          <p className="mt-1 text-muted-foreground">
+            Combined overview across all societies and schools. Richer cross-tenant analytics will come later.
+          </p>
         </div>
 
-        {loading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-28 bg-muted rounded-xl animate-pulse" />
+              <div key={i} className="h-28 animate-pulse rounded-xl bg-muted" />
             ))}
           </div>
+        ) : isError ? (
+          <p className="text-sm text-destructive">Could not load platform statistics. Please try again.</p>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
             {items.map((item) => (
               <Card key={item.label}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">{item.label}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex items-center justify-between">
-                  <span className="text-3xl font-bold">{item.value.toLocaleString()}</span>
-                  <item.icon className="w-5 h-5 text-primary opacity-70" />
+                  <span className="text-3xl font-bold">{(item.value ?? 0).toLocaleString()}</span>
+                  <item.icon className="size-5 text-primary opacity-70" />
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
 
-        <div className="flex gap-3">
-          <Link href="/societies" className="text-sm text-primary underline-offset-4 hover:underline">
-            Manage Societies →
-          </Link>
-          <Link href="/schools" className="text-sm text-primary underline-offset-4 hover:underline">
-            All Schools →
-          </Link>
+        <div className="grid gap-4 md:grid-cols-3">
+          {PLATFORM_NAV_SECTIONS.map((section) => (
+            <Card key={section.id}>
+              <CardHeader>
+                <CardTitle className="text-lg">{section.label}</CardTitle>
+                <CardDescription>{section.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {section.items.map((item) => (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    className="block text-sm text-primary underline-offset-4 hover:underline"
+                  >
+                    {item.label} →
+                  </Link>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </Layout>

@@ -2,11 +2,13 @@ import { ReactNode, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuthStore } from "@/lib/auth";
 import type { UserRole } from "@/lib/auth-types";
+import { hasAnyPermission } from "@/lib/permissions";
 import { useScope } from "@/lib/use-scope";
 
 type GuardProps = {
   children: ReactNode;
   roles?: UserRole[];
+  permissions?: string[];
   requireBranch?: boolean;
   requireStudent?: boolean;
   requireSchool?: boolean;
@@ -15,13 +17,21 @@ type GuardProps = {
 export function ProtectedRoute({
   children,
   roles,
+  permissions,
   requireBranch,
   requireStudent,
   requireSchool,
 }: GuardProps) {
   const [, setLocation] = useLocation();
-  const { user, isHydrated } = useAuthStore();
+  const { user, isHydrated, permissions: userPermissions } = useAuthStore();
   const scope = useScope();
+
+  const permissionOk =
+    !permissions ||
+    permissions.length === 0 ||
+    hasAnyPermission(userPermissions, permissions);
+
+  const roleOk = !roles || (user != null && roles.includes(user.role));
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -29,7 +39,11 @@ export function ProtectedRoute({
       setLocation("/login");
       return;
     }
-    if (roles && !roles.includes(user.role)) {
+    if (!permissionOk && !roleOk) {
+      setLocation(defaultHomeForRole(user.role));
+      return;
+    }
+    if (roles && !roles.includes(user.role) && !permissionOk) {
       setLocation(defaultHomeForRole(user.role));
       return;
     }
@@ -40,6 +54,8 @@ export function ProtectedRoute({
     if (requireBranch && (!scope.branchId || !scope.sessionId)) {
       if (user.role === "school_admin") {
         setLocation("/select-branch");
+      } else if (user.role === "super_admin") {
+        setLocation("/platform/school-ops");
       } else {
         setLocation(defaultHomeForRole(user.role));
       }
@@ -52,6 +68,9 @@ export function ProtectedRoute({
     isHydrated,
     user,
     roles,
+    permissions,
+    permissionOk,
+    roleOk,
     requireBranch,
     requireStudent,
     requireSchool,
@@ -68,7 +87,8 @@ export function ProtectedRoute({
   }
 
   if (!user) return null;
-  if (roles && !roles.includes(user.role)) return null;
+  if (!permissionOk && !roleOk) return null;
+  if (roles && !roles.includes(user.role) && !permissionOk) return null;
   if (requireBranch && (!scope.branchId || !scope.sessionId)) return null;
   if (requireStudent && !scope.studentId) return null;
 

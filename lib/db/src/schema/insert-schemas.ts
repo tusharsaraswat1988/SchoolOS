@@ -1,7 +1,12 @@
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { academicSessionsTable } from "./academic-sessions";
+import { financialSessionsTable } from "./financial-sessions";
 import { announcementsTable } from "./announcements";
+import {
+  admissionLeadFollowUpsTable,
+  admissionLeadsTable,
+} from "./admission-leads";
 import { attendanceRecordsTable } from "./attendance";
 import { auditLogsTable } from "./audit";
 import { branchesTable } from "./branches";
@@ -12,6 +17,15 @@ import { schoolsTable } from "./schools";
 import { sectionsTable } from "./sections";
 import { societiesTable } from "./societies";
 import { parentsTable, studentsTable } from "./students";
+import {
+  communicationPreferencesTable,
+  documentMasterTable,
+  documentVerificationsTable,
+  documentsTable,
+  personRelationsTable,
+  siblingMappingsTable,
+  studentRelationMappingsTable,
+} from "./student-master";
 import { usersTable } from "./users";
 
 export const insertSocietySchema = createInsertSchema(societiesTable).omit({
@@ -30,6 +44,11 @@ export const insertBranchSchema = createInsertSchema(branchesTable).omit({
   updatedAt: true,
 });
 export const insertAcademicSessionSchema = createInsertSchema(academicSessionsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertFinancialSessionSchema = createInsertSchema(financialSessionsTable).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -88,11 +107,56 @@ export const insertAnnouncementSchema = createInsertSchema(announcementsTable).o
   createdAt: true,
   updatedAt: true,
 });
+export const insertAdmissionLeadSchema = createInsertSchema(admissionLeadsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertAdmissionLeadFollowUpSchema = createInsertSchema(admissionLeadFollowUpsTable).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertPersonRelationSchema = createInsertSchema(personRelationsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertStudentRelationMappingSchema = createInsertSchema(studentRelationMappingsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertSiblingMappingSchema = createInsertSchema(siblingMappingsTable).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertDocumentMasterSchema = createInsertSchema(documentMasterTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertDocumentSchema = createInsertSchema(documentsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export const insertDocumentVerificationSchema = createInsertSchema(documentVerificationsTable).omit({
+  id: true,
+  createdAt: true,
+});
+export const insertCommunicationPreferenceSchema = createInsertSchema(
+  communicationPreferencesTable,
+).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
 
 export type InsertSociety = z.infer<typeof insertSocietySchema>;
 export type InsertSchool = z.infer<typeof insertSchoolSchema>;
 export type InsertBranch = z.infer<typeof insertBranchSchema>;
 export type InsertAcademicSession = z.infer<typeof insertAcademicSessionSchema>;
+export type InsertFinancialSession = z.infer<typeof insertFinancialSessionSchema>;
 export type InsertRole = z.infer<typeof insertRoleSchema>;
 export type InsertPermission = z.infer<typeof insertPermissionSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;

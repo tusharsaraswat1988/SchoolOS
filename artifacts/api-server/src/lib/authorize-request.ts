@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import type { AuthenticatedRequest } from "./auth-context";
 import { validateRequestAccess } from "./authorize-access";
 import { isAuthOnlyPath, isPublicPath } from "./require-auth";
+import { resolveRoutePermissions, routePermissionSatisfied } from "./route-permissions";
 
 export async function authorizeRequest(req: Request, res: Response, next: NextFunction) {
   if (isPublicPath(req.path) || isAuthOnlyPath(req.path)) {
@@ -21,6 +22,14 @@ export async function authorizeRequest(req: Request, res: Response, next: NextFu
   );
   if (!decision.allowed) {
     return res.status(403).json({ error: decision.reason });
+  }
+
+  const requiredPermissions = resolveRoutePermissions(req.method, req.path);
+  if (
+    requiredPermissions &&
+    !routePermissionSatisfied(authReq.auth.permissions, requiredPermissions)
+  ) {
+    return res.status(403).json({ error: "Forbidden" });
   }
 
   return next();

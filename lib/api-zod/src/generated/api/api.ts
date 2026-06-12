@@ -387,6 +387,21 @@ export const ListBranchSessionsResponse = zod.object({
 });
 
 /**
+ * @summary Create an academic session for a branch
+ */
+export const CreateAcademicSessionParams = zod.object({
+  branchId: zod.coerce.number(),
+});
+
+export const CreateAcademicSessionBody = zod.object({
+  code: zod.string(),
+  name: zod.string(),
+  startsOn: zod.coerce.date(),
+  endsOn: zod.coerce.date(),
+  isCurrent: zod.boolean().optional(),
+});
+
+/**
  * @summary Get current academic session for a branch
  */
 export const GetCurrentSessionParams = zod.object({
@@ -394,6 +409,176 @@ export const GetCurrentSessionParams = zod.object({
 });
 
 export const GetCurrentSessionResponse = zod.object({
+  id: zod.number(),
+  societyId: zod.number(),
+  schoolId: zod.number(),
+  branchId: zod.number(),
+  code: zod.string(),
+  name: zod.string(),
+  startsOn: zod.coerce.date(),
+  endsOn: zod.coerce.date(),
+  isCurrent: zod.boolean(),
+  status: zod.enum(["active", "inactive", "archived"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Update an academic session
+ */
+export const UpdateAcademicSessionParams = zod.object({
+  branchId: zod.coerce.number(),
+  sessionId: zod.coerce.number(),
+});
+
+export const UpdateAcademicSessionBody = zod.object({
+  name: zod.string().optional(),
+  startsOn: zod.coerce.date().optional(),
+  endsOn: zod.coerce.date().optional(),
+  status: zod.enum(["active", "inactive", "archived"]).optional(),
+});
+
+export const UpdateAcademicSessionResponse = zod.object({
+  id: zod.number(),
+  societyId: zod.number(),
+  schoolId: zod.number(),
+  branchId: zod.number(),
+  code: zod.string(),
+  name: zod.string(),
+  startsOn: zod.coerce.date(),
+  endsOn: zod.coerce.date(),
+  isCurrent: zod.boolean(),
+  status: zod.enum(["active", "inactive", "archived"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Set the current academic session for a branch
+ */
+export const SetCurrentAcademicSessionParams = zod.object({
+  branchId: zod.coerce.number(),
+  sessionId: zod.coerce.number(),
+});
+
+export const SetCurrentAcademicSessionResponse = zod.object({
+  id: zod.number(),
+  societyId: zod.number(),
+  schoolId: zod.number(),
+  branchId: zod.number(),
+  code: zod.string(),
+  name: zod.string(),
+  startsOn: zod.coerce.date(),
+  endsOn: zod.coerce.date(),
+  isCurrent: zod.boolean(),
+  status: zod.enum(["active", "inactive", "archived"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary List financial year sessions for a branch
+ */
+export const ListFinancialSessionsParams = zod.object({
+  branchId: zod.coerce.number(),
+});
+
+export const ListFinancialSessionsResponse = zod.object({
+  data: zod.array(
+    zod.object({
+      id: zod.number(),
+      societyId: zod.number(),
+      schoolId: zod.number(),
+      branchId: zod.number(),
+      code: zod.string(),
+      name: zod.string(),
+      startsOn: zod.coerce.date(),
+      endsOn: zod.coerce.date(),
+      isCurrent: zod.boolean(),
+      status: zod.enum(["active", "inactive", "archived"]),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date().optional(),
+    }),
+  ),
+  total: zod.number(),
+});
+
+/**
+ * @summary Create a financial year session for a branch
+ */
+export const CreateFinancialSessionParams = zod.object({
+  branchId: zod.coerce.number(),
+});
+
+export const CreateFinancialSessionBody = zod.object({
+  code: zod.string(),
+  name: zod.string(),
+  startsOn: zod.coerce.date(),
+  endsOn: zod.coerce.date(),
+  isCurrent: zod.boolean().optional(),
+});
+
+/**
+ * @summary Get current financial year session for a branch
+ */
+export const GetCurrentFinancialSessionParams = zod.object({
+  branchId: zod.coerce.number(),
+});
+
+export const GetCurrentFinancialSessionResponse = zod.object({
+  id: zod.number(),
+  societyId: zod.number(),
+  schoolId: zod.number(),
+  branchId: zod.number(),
+  code: zod.string(),
+  name: zod.string(),
+  startsOn: zod.coerce.date(),
+  endsOn: zod.coerce.date(),
+  isCurrent: zod.boolean(),
+  status: zod.enum(["active", "inactive", "archived"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Update a financial year session
+ */
+export const UpdateFinancialSessionParams = zod.object({
+  branchId: zod.coerce.number(),
+  financialSessionId: zod.coerce.number(),
+});
+
+export const UpdateFinancialSessionBody = zod.object({
+  name: zod.string().optional(),
+  startsOn: zod.coerce.date().optional(),
+  endsOn: zod.coerce.date().optional(),
+  status: zod.enum(["active", "inactive", "archived"]).optional(),
+});
+
+export const UpdateFinancialSessionResponse = zod.object({
+  id: zod.number(),
+  societyId: zod.number(),
+  schoolId: zod.number(),
+  branchId: zod.number(),
+  code: zod.string(),
+  name: zod.string(),
+  startsOn: zod.coerce.date(),
+  endsOn: zod.coerce.date(),
+  isCurrent: zod.boolean(),
+  status: zod.enum(["active", "inactive", "archived"]),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Set the current financial year session for a branch
+ */
+export const SetCurrentFinancialSessionParams = zod.object({
+  branchId: zod.coerce.number(),
+  financialSessionId: zod.coerce.number(),
+});
+
+export const SetCurrentFinancialSessionResponse = zod.object({
   id: zod.number(),
   societyId: zod.number(),
   schoolId: zod.number(),
@@ -425,7 +610,16 @@ export const ListStudentsQueryParams = zod.object({
   search: zod.coerce.string().optional(),
   classId: zod.coerce.number().nullish(),
   status: zod
-    .enum(["active", "inactive", "graduated", "transferred"])
+    .enum([
+      "active",
+      "inactive",
+      "graduated",
+      "transferred",
+      "left",
+      "tc_issued",
+      "alumni",
+      "suspended",
+    ])
     .optional(),
 });
 
@@ -434,6 +628,7 @@ export const ListStudentsResponse = zod.object({
     zod.object({
       id: zod.number(),
       admissionNumber: zod.string(),
+      registrationNumber: zod.string().nullish(),
       rollNumber: zod.string().nullish(),
       firstName: zod.string(),
       middleName: zod.string().nullish(),
@@ -442,6 +637,8 @@ export const ListStudentsResponse = zod.object({
       dateOfBirth: zod.coerce.date().nullish(),
       bloodGroup: zod.string().nullish(),
       photoUrl: zod.string().nullish(),
+      signatureUrl: zod.string().nullish(),
+      age: zod.number().nullish(),
       classId: zod.number(),
       className: zod.string().nullish(),
       sectionId: zod.number(),
@@ -457,7 +654,26 @@ export const ListStudentsResponse = zod.object({
       parentEmail: zod.string().nullish(),
       address: zod.string().nullish(),
       category: zod.string().nullish(),
-      status: zod.enum(["active", "inactive", "graduated", "transferred"]),
+      religion: zod.string().nullish(),
+      nationality: zod.string().nullish(),
+      aadhaar: zod.string().nullish(),
+      penNumber: zod.string().nullish(),
+      apaarId: zod.string().nullish(),
+      udiseStudentId: zod.string().nullish(),
+      isRteStudent: zod.boolean().optional(),
+      isCwsnStudent: zod.boolean().optional(),
+      house: zod.string().nullish(),
+      admissionDate: zod.coerce.date().nullish(),
+      status: zod.enum([
+        "active",
+        "inactive",
+        "graduated",
+        "transferred",
+        "left",
+        "tc_issued",
+        "alumni",
+        "suspended",
+      ]),
       createdAt: zod.coerce.date(),
     }),
   ),
@@ -491,6 +707,32 @@ export const CreateStudentBody = zod.object({
   parentPhone: zod.string().optional(),
   parentEmail: zod.string().optional(),
   address: zod.string().optional(),
+  registrationNumber: zod.string().optional(),
+  religion: zod.string().optional(),
+  nationality: zod.string().optional(),
+  aadhaar: zod.string().optional(),
+  penNumber: zod.string().optional(),
+  apaarId: zod.string().optional(),
+  udiseStudentId: zod.string().optional(),
+  isRteStudent: zod.boolean().optional(),
+  isCwsnStudent: zod.boolean().optional(),
+  house: zod.string().optional(),
+  admissionDate: zod.coerce.date().optional(),
+  status: zod
+    .enum([
+      "active",
+      "inactive",
+      "graduated",
+      "transferred",
+      "left",
+      "tc_issued",
+      "alumni",
+      "suspended",
+    ])
+    .optional(),
+  photoUrl: zod.string().optional(),
+  signatureUrl: zod.string().optional(),
+  socialCategory: zod.string().optional(),
 });
 
 /**
@@ -505,6 +747,7 @@ export const GetStudentParams = zod.object({
 export const GetStudentResponse = zod.object({
   id: zod.number(),
   admissionNumber: zod.string(),
+  registrationNumber: zod.string().nullish(),
   rollNumber: zod.string().nullish(),
   firstName: zod.string(),
   middleName: zod.string().nullish(),
@@ -513,6 +756,8 @@ export const GetStudentResponse = zod.object({
   dateOfBirth: zod.coerce.date().nullish(),
   bloodGroup: zod.string().nullish(),
   photoUrl: zod.string().nullish(),
+  signatureUrl: zod.string().nullish(),
+  age: zod.number().nullish(),
   classId: zod.number(),
   className: zod.string().nullish(),
   sectionId: zod.number(),
@@ -528,7 +773,26 @@ export const GetStudentResponse = zod.object({
   parentEmail: zod.string().nullish(),
   address: zod.string().nullish(),
   category: zod.string().nullish(),
-  status: zod.enum(["active", "inactive", "graduated", "transferred"]),
+  religion: zod.string().nullish(),
+  nationality: zod.string().nullish(),
+  aadhaar: zod.string().nullish(),
+  penNumber: zod.string().nullish(),
+  apaarId: zod.string().nullish(),
+  udiseStudentId: zod.string().nullish(),
+  isRteStudent: zod.boolean().optional(),
+  isCwsnStudent: zod.boolean().optional(),
+  house: zod.string().nullish(),
+  admissionDate: zod.coerce.date().nullish(),
+  status: zod.enum([
+    "active",
+    "inactive",
+    "graduated",
+    "transferred",
+    "left",
+    "tc_issued",
+    "alumni",
+    "suspended",
+  ]),
   createdAt: zod.coerce.date(),
 });
 
@@ -556,14 +820,38 @@ export const UpdateStudentBody = zod.object({
   parentEmail: zod.string().optional(),
   address: zod.string().optional(),
   status: zod
-    .enum(["active", "inactive", "graduated", "transferred"])
+    .enum([
+      "active",
+      "inactive",
+      "graduated",
+      "transferred",
+      "left",
+      "tc_issued",
+      "alumni",
+      "suspended",
+    ])
     .optional(),
   bloodGroup: zod.string().optional(),
+  registrationNumber: zod.string().optional(),
+  religion: zod.string().optional(),
+  nationality: zod.string().optional(),
+  aadhaar: zod.string().optional(),
+  penNumber: zod.string().optional(),
+  apaarId: zod.string().optional(),
+  udiseStudentId: zod.string().optional(),
+  isRteStudent: zod.boolean().optional(),
+  isCwsnStudent: zod.boolean().optional(),
+  house: zod.string().optional(),
+  admissionDate: zod.coerce.date().optional(),
+  photoUrl: zod.string().optional(),
+  signatureUrl: zod.string().optional(),
+  socialCategory: zod.string().optional(),
 });
 
 export const UpdateStudentResponse = zod.object({
   id: zod.number(),
   admissionNumber: zod.string(),
+  registrationNumber: zod.string().nullish(),
   rollNumber: zod.string().nullish(),
   firstName: zod.string(),
   middleName: zod.string().nullish(),
@@ -572,6 +860,8 @@ export const UpdateStudentResponse = zod.object({
   dateOfBirth: zod.coerce.date().nullish(),
   bloodGroup: zod.string().nullish(),
   photoUrl: zod.string().nullish(),
+  signatureUrl: zod.string().nullish(),
+  age: zod.number().nullish(),
   classId: zod.number(),
   className: zod.string().nullish(),
   sectionId: zod.number(),
@@ -587,7 +877,26 @@ export const UpdateStudentResponse = zod.object({
   parentEmail: zod.string().nullish(),
   address: zod.string().nullish(),
   category: zod.string().nullish(),
-  status: zod.enum(["active", "inactive", "graduated", "transferred"]),
+  religion: zod.string().nullish(),
+  nationality: zod.string().nullish(),
+  aadhaar: zod.string().nullish(),
+  penNumber: zod.string().nullish(),
+  apaarId: zod.string().nullish(),
+  udiseStudentId: zod.string().nullish(),
+  isRteStudent: zod.boolean().optional(),
+  isCwsnStudent: zod.boolean().optional(),
+  house: zod.string().nullish(),
+  admissionDate: zod.coerce.date().nullish(),
+  status: zod.enum([
+    "active",
+    "inactive",
+    "graduated",
+    "transferred",
+    "left",
+    "tc_issued",
+    "alumni",
+    "suspended",
+  ]),
   createdAt: zod.coerce.date(),
 });
 

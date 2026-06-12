@@ -27,10 +27,15 @@ export const studentsTable = pgTable(
     classId: integer("class_id")
       .notNull()
       .references(() => classesTable.id, { onDelete: "restrict" }),
+    billingClassId: integer("billing_class_id").references(() => classesTable.id, {
+      onDelete: "set null",
+    }),
+    billingClassEffectiveFrom: date("billing_class_effective_from"),
     sectionId: integer("section_id")
       .notNull()
       .references(() => sectionsTable.id, { onDelete: "restrict" }),
     admissionNumber: text("admission_number").notNull(),
+    registrationNumber: text("registration_number"),
     rollNumber: text("roll_number"),
     firstName: text("first_name").notNull(),
     middleName: text("middle_name"),
@@ -39,6 +44,7 @@ export const studentsTable = pgTable(
     gender: genderEnum("gender").notNull(),
     bloodGroup: text("blood_group"),
     photoUrl: text("photo_url"),
+    signatureUrl: text("signature_url"),
     fatherName: text("father_name").notNull(),
     motherName: text("mother_name").notNull(),
     guardianName: text("guardian_name"),
@@ -47,7 +53,14 @@ export const studentsTable = pgTable(
     address: text("address").notNull(),
     socialCategory: socialCategoryEnum("social_category"),
     religion: text("religion"),
+    nationality: text("nationality"),
     aadhaar: text("aadhaar"),
+    penNumber: text("pen_number"),
+    apaarId: text("apaar_id"),
+    udiseStudentId: text("udise_student_id"),
+    isRteStudent: boolean("is_rte_student").notNull().default(false),
+    isCwsnStudent: boolean("is_cwsn_student").notNull().default(false),
+    house: text("house"),
     admissionDate: date("admission_date"),
     transportAssigned: boolean("transport_assigned").notNull().default(false),
     healthRecordId: integer("health_record_id"),
@@ -62,6 +75,7 @@ export const studentsTable = pgTable(
   },
   (table) => ({
     admissionUq: uniqueIndex("students_admission_number_uq").on(table.admissionNumber),
+    registrationUq: uniqueIndex("students_registration_number_uq").on(table.registrationNumber),
     sectionIdx: index("students_section_idx").on(table.sectionId),
   }),
 );

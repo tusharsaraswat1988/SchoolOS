@@ -35,11 +35,14 @@ import type {
   CreateFeeRecordBody,
   CreateSchoolBody,
   CreateSectionBody,
+  CreateSessionBody,
   CreateStudentBody,
   ErrorResponse,
   FeeList,
   FeeRecord,
   FeeSummary,
+  FinancialSession,
+  FinancialSessionList,
   ForbiddenResponse,
   GetAttendanceSummaryParams,
   GetBranchDashboardParams,
@@ -70,6 +73,7 @@ import type {
   SuperAdminDashboard,
   UpdateBranchUserBody,
   UpdateSchoolBody,
+  UpdateSessionBody,
   UpdateStudentBody,
 } from "./api.schemas";
 
@@ -1429,6 +1433,93 @@ export function useListBranchSessions<
 }
 
 /**
+ * @summary Create an academic session for a branch
+ */
+export const getCreateAcademicSessionUrl = (branchId: number) => {
+  return `/api/branches/${branchId}/sessions`;
+};
+
+export const createAcademicSession = async (
+  branchId: number,
+  createSessionBody: CreateSessionBody,
+  options?: RequestInit,
+): Promise<AcademicSession> => {
+  return customFetch<AcademicSession>(getCreateAcademicSessionUrl(branchId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createSessionBody),
+  });
+};
+
+export const getCreateAcademicSessionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAcademicSession>>,
+    TError,
+    { branchId: number; data: BodyType<CreateSessionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createAcademicSession>>,
+  TError,
+  { branchId: number; data: BodyType<CreateSessionBody> },
+  TContext
+> => {
+  const mutationKey = ["createAcademicSession"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createAcademicSession>>,
+    { branchId: number; data: BodyType<CreateSessionBody> }
+  > = (props) => {
+    const { branchId, data } = props ?? {};
+
+    return createAcademicSession(branchId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateAcademicSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAcademicSession>>
+>;
+export type CreateAcademicSessionMutationBody = BodyType<CreateSessionBody>;
+export type CreateAcademicSessionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create an academic session for a branch
+ */
+export const useCreateAcademicSession = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAcademicSession>>,
+    TError,
+    { branchId: number; data: BodyType<CreateSessionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createAcademicSession>>,
+  TError,
+  { branchId: number; data: BodyType<CreateSessionBody> },
+  TContext
+> => {
+  return useMutation(getCreateAcademicSessionMutationOptions(options));
+};
+
+/**
  * @summary Get current academic session for a branch
  */
 export const getGetCurrentSessionUrl = (branchId: number) => {
@@ -1516,6 +1607,679 @@ export function useGetCurrentSession<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Update an academic session
+ */
+export const getUpdateAcademicSessionUrl = (
+  branchId: number,
+  sessionId: number,
+) => {
+  return `/api/branches/${branchId}/sessions/${sessionId}`;
+};
+
+export const updateAcademicSession = async (
+  branchId: number,
+  sessionId: number,
+  updateSessionBody: UpdateSessionBody,
+  options?: RequestInit,
+): Promise<AcademicSession> => {
+  return customFetch<AcademicSession>(
+    getUpdateAcademicSessionUrl(branchId, sessionId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateSessionBody),
+    },
+  );
+};
+
+export const getUpdateAcademicSessionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAcademicSession>>,
+    TError,
+    { branchId: number; sessionId: number; data: BodyType<UpdateSessionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateAcademicSession>>,
+  TError,
+  { branchId: number; sessionId: number; data: BodyType<UpdateSessionBody> },
+  TContext
+> => {
+  const mutationKey = ["updateAcademicSession"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateAcademicSession>>,
+    { branchId: number; sessionId: number; data: BodyType<UpdateSessionBody> }
+  > = (props) => {
+    const { branchId, sessionId, data } = props ?? {};
+
+    return updateAcademicSession(branchId, sessionId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateAcademicSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateAcademicSession>>
+>;
+export type UpdateAcademicSessionMutationBody = BodyType<UpdateSessionBody>;
+export type UpdateAcademicSessionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update an academic session
+ */
+export const useUpdateAcademicSession = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAcademicSession>>,
+    TError,
+    { branchId: number; sessionId: number; data: BodyType<UpdateSessionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateAcademicSession>>,
+  TError,
+  { branchId: number; sessionId: number; data: BodyType<UpdateSessionBody> },
+  TContext
+> => {
+  return useMutation(getUpdateAcademicSessionMutationOptions(options));
+};
+
+/**
+ * @summary Set the current academic session for a branch
+ */
+export const getSetCurrentAcademicSessionUrl = (
+  branchId: number,
+  sessionId: number,
+) => {
+  return `/api/branches/${branchId}/sessions/${sessionId}/set-current`;
+};
+
+export const setCurrentAcademicSession = async (
+  branchId: number,
+  sessionId: number,
+  options?: RequestInit,
+): Promise<AcademicSession> => {
+  return customFetch<AcademicSession>(
+    getSetCurrentAcademicSessionUrl(branchId, sessionId),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
+export const getSetCurrentAcademicSessionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setCurrentAcademicSession>>,
+    TError,
+    { branchId: number; sessionId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setCurrentAcademicSession>>,
+  TError,
+  { branchId: number; sessionId: number },
+  TContext
+> => {
+  const mutationKey = ["setCurrentAcademicSession"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setCurrentAcademicSession>>,
+    { branchId: number; sessionId: number }
+  > = (props) => {
+    const { branchId, sessionId } = props ?? {};
+
+    return setCurrentAcademicSession(branchId, sessionId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetCurrentAcademicSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setCurrentAcademicSession>>
+>;
+
+export type SetCurrentAcademicSessionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Set the current academic session for a branch
+ */
+export const useSetCurrentAcademicSession = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setCurrentAcademicSession>>,
+    TError,
+    { branchId: number; sessionId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setCurrentAcademicSession>>,
+  TError,
+  { branchId: number; sessionId: number },
+  TContext
+> => {
+  return useMutation(getSetCurrentAcademicSessionMutationOptions(options));
+};
+
+/**
+ * @summary List financial year sessions for a branch
+ */
+export const getListFinancialSessionsUrl = (branchId: number) => {
+  return `/api/branches/${branchId}/financial-sessions`;
+};
+
+export const listFinancialSessions = async (
+  branchId: number,
+  options?: RequestInit,
+): Promise<FinancialSessionList> => {
+  return customFetch<FinancialSessionList>(
+    getListFinancialSessionsUrl(branchId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListFinancialSessionsQueryKey = (branchId: number) => {
+  return [`/api/branches/${branchId}/financial-sessions`] as const;
+};
+
+export const getListFinancialSessionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listFinancialSessions>>,
+  TError = ErrorType<unknown>,
+>(
+  branchId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listFinancialSessions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListFinancialSessionsQueryKey(branchId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listFinancialSessions>>
+  > = ({ signal }) =>
+    listFinancialSessions(branchId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!branchId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listFinancialSessions>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListFinancialSessionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listFinancialSessions>>
+>;
+export type ListFinancialSessionsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List financial year sessions for a branch
+ */
+
+export function useListFinancialSessions<
+  TData = Awaited<ReturnType<typeof listFinancialSessions>>,
+  TError = ErrorType<unknown>,
+>(
+  branchId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listFinancialSessions>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListFinancialSessionsQueryOptions(branchId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a financial year session for a branch
+ */
+export const getCreateFinancialSessionUrl = (branchId: number) => {
+  return `/api/branches/${branchId}/financial-sessions`;
+};
+
+export const createFinancialSession = async (
+  branchId: number,
+  createSessionBody: CreateSessionBody,
+  options?: RequestInit,
+): Promise<FinancialSession> => {
+  return customFetch<FinancialSession>(getCreateFinancialSessionUrl(branchId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createSessionBody),
+  });
+};
+
+export const getCreateFinancialSessionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createFinancialSession>>,
+    TError,
+    { branchId: number; data: BodyType<CreateSessionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createFinancialSession>>,
+  TError,
+  { branchId: number; data: BodyType<CreateSessionBody> },
+  TContext
+> => {
+  const mutationKey = ["createFinancialSession"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createFinancialSession>>,
+    { branchId: number; data: BodyType<CreateSessionBody> }
+  > = (props) => {
+    const { branchId, data } = props ?? {};
+
+    return createFinancialSession(branchId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateFinancialSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createFinancialSession>>
+>;
+export type CreateFinancialSessionMutationBody = BodyType<CreateSessionBody>;
+export type CreateFinancialSessionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a financial year session for a branch
+ */
+export const useCreateFinancialSession = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createFinancialSession>>,
+    TError,
+    { branchId: number; data: BodyType<CreateSessionBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createFinancialSession>>,
+  TError,
+  { branchId: number; data: BodyType<CreateSessionBody> },
+  TContext
+> => {
+  return useMutation(getCreateFinancialSessionMutationOptions(options));
+};
+
+/**
+ * @summary Get current financial year session for a branch
+ */
+export const getGetCurrentFinancialSessionUrl = (branchId: number) => {
+  return `/api/branches/${branchId}/financial-sessions/current`;
+};
+
+export const getCurrentFinancialSession = async (
+  branchId: number,
+  options?: RequestInit,
+): Promise<FinancialSession> => {
+  return customFetch<FinancialSession>(
+    getGetCurrentFinancialSessionUrl(branchId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetCurrentFinancialSessionQueryKey = (branchId: number) => {
+  return [`/api/branches/${branchId}/financial-sessions/current`] as const;
+};
+
+export const getGetCurrentFinancialSessionQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCurrentFinancialSession>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  branchId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCurrentFinancialSession>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetCurrentFinancialSessionQueryKey(branchId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCurrentFinancialSession>>
+  > = ({ signal }) =>
+    getCurrentFinancialSession(branchId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!branchId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCurrentFinancialSession>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCurrentFinancialSessionQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCurrentFinancialSession>>
+>;
+export type GetCurrentFinancialSessionQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get current financial year session for a branch
+ */
+
+export function useGetCurrentFinancialSession<
+  TData = Awaited<ReturnType<typeof getCurrentFinancialSession>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  branchId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCurrentFinancialSession>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCurrentFinancialSessionQueryOptions(
+    branchId,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a financial year session
+ */
+export const getUpdateFinancialSessionUrl = (
+  branchId: number,
+  financialSessionId: number,
+) => {
+  return `/api/branches/${branchId}/financial-sessions/${financialSessionId}`;
+};
+
+export const updateFinancialSession = async (
+  branchId: number,
+  financialSessionId: number,
+  updateSessionBody: UpdateSessionBody,
+  options?: RequestInit,
+): Promise<FinancialSession> => {
+  return customFetch<FinancialSession>(
+    getUpdateFinancialSessionUrl(branchId, financialSessionId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateSessionBody),
+    },
+  );
+};
+
+export const getUpdateFinancialSessionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateFinancialSession>>,
+    TError,
+    {
+      branchId: number;
+      financialSessionId: number;
+      data: BodyType<UpdateSessionBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateFinancialSession>>,
+  TError,
+  {
+    branchId: number;
+    financialSessionId: number;
+    data: BodyType<UpdateSessionBody>;
+  },
+  TContext
+> => {
+  const mutationKey = ["updateFinancialSession"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateFinancialSession>>,
+    {
+      branchId: number;
+      financialSessionId: number;
+      data: BodyType<UpdateSessionBody>;
+    }
+  > = (props) => {
+    const { branchId, financialSessionId, data } = props ?? {};
+
+    return updateFinancialSession(
+      branchId,
+      financialSessionId,
+      data,
+      requestOptions,
+    );
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateFinancialSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateFinancialSession>>
+>;
+export type UpdateFinancialSessionMutationBody = BodyType<UpdateSessionBody>;
+export type UpdateFinancialSessionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a financial year session
+ */
+export const useUpdateFinancialSession = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateFinancialSession>>,
+    TError,
+    {
+      branchId: number;
+      financialSessionId: number;
+      data: BodyType<UpdateSessionBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateFinancialSession>>,
+  TError,
+  {
+    branchId: number;
+    financialSessionId: number;
+    data: BodyType<UpdateSessionBody>;
+  },
+  TContext
+> => {
+  return useMutation(getUpdateFinancialSessionMutationOptions(options));
+};
+
+/**
+ * @summary Set the current financial year session for a branch
+ */
+export const getSetCurrentFinancialSessionUrl = (
+  branchId: number,
+  financialSessionId: number,
+) => {
+  return `/api/branches/${branchId}/financial-sessions/${financialSessionId}/set-current`;
+};
+
+export const setCurrentFinancialSession = async (
+  branchId: number,
+  financialSessionId: number,
+  options?: RequestInit,
+): Promise<FinancialSession> => {
+  return customFetch<FinancialSession>(
+    getSetCurrentFinancialSessionUrl(branchId, financialSessionId),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
+export const getSetCurrentFinancialSessionMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setCurrentFinancialSession>>,
+    TError,
+    { branchId: number; financialSessionId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setCurrentFinancialSession>>,
+  TError,
+  { branchId: number; financialSessionId: number },
+  TContext
+> => {
+  const mutationKey = ["setCurrentFinancialSession"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setCurrentFinancialSession>>,
+    { branchId: number; financialSessionId: number }
+  > = (props) => {
+    const { branchId, financialSessionId } = props ?? {};
+
+    return setCurrentFinancialSession(
+      branchId,
+      financialSessionId,
+      requestOptions,
+    );
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetCurrentFinancialSessionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setCurrentFinancialSession>>
+>;
+
+export type SetCurrentFinancialSessionMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Set the current financial year session for a branch
+ */
+export const useSetCurrentFinancialSession = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setCurrentFinancialSession>>,
+    TError,
+    { branchId: number; financialSessionId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setCurrentFinancialSession>>,
+  TError,
+  { branchId: number; financialSessionId: number },
+  TContext
+> => {
+  return useMutation(getSetCurrentFinancialSessionMutationOptions(options));
+};
 
 /**
  * @summary List students in a branch session

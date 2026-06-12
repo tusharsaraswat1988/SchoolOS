@@ -4,10 +4,11 @@ import {
   db,
   feeHeadsTable,
   feeStructuresTable,
+  academicSessionsTable,
 } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import { CreateFeeHeadBody, CreateFeeStructureBody } from "../lib/udise-schemas";
-import { resolveBranchScope, resolveSessionScope } from "../lib/scope";
+import { resolveBranchScope, resolveCurrentFinancialSession, resolveSessionScope } from "../lib/scope";
 import { toPgDate } from "../lib/db-values";
 
 const router = Router();
@@ -64,6 +65,23 @@ router.post("/branches/:branchId/sessions/:sessionId/fee-structures", async (req
   const parsed = CreateFeeStructureBody.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid body" });
 
+  const financialSession = await resolveCurrentFinancialSession(branchId);
+
+  const [session] = await db
+    .select({ startsOn: academicSessionsTable.startsOn })
+    .from(academicSessionsTable)
+    .where(
+      and(
+        eq(academicSessionsTable.id, sessionId),
+        eq(academicSessionsTable.branchId, branchId),
+      ),
+    )
+    .limit(1);
+  if (!session) return res.status(404).json({ error: "Session not found" });
+
+  const effectiveFrom =
+    (parsed.data.effectiveFrom ? toPgDate(parsed.data.effectiveFrom) : null) ?? session.startsOn;
+
   const [row] = await db
     .insert(feeStructuresTable)
     .values({
@@ -71,11 +89,12 @@ router.post("/branches/:branchId/sessions/:sessionId/fee-structures", async (req
       feeHeadId: parsed.data.feeHeadId,
       amount: parsed.data.amount,
       dueDayOfMonth: parsed.data.dueDayOfMonth,
-      effectiveFrom: parsed.data.effectiveFrom ? toPgDate(parsed.data.effectiveFrom) : null,
+      effectiveFrom,
       societyId: scope.societyId,
       schoolId: scope.schoolId,
       branchId: scope.branchId,
       sessionId: scope.sessionId,
+      financialSessionId: financialSession?.id ?? null,
     })
     .returning();
 

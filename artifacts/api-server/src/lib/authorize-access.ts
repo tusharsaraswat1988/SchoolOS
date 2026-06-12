@@ -249,8 +249,18 @@ export async function validateRequestAccess(
     return { allowed: true };
   }
 
-  if (path === "/platform/dashboard") {
-    return { allowed: false, reason: "Forbidden" };
+  if (path === "/platform/dashboard" || path.startsWith("/platform/access-control")) {
+    return scope.role === "super_admin"
+      ? { allowed: true }
+      : { allowed: false, reason: "Forbidden" };
+  }
+
+  if (path.startsWith("/schools/") && path.includes("/access-control")) {
+    const ids = mergeResourceIds(path, params);
+    if (ids.schoolId == null) {
+      return { allowed: false, reason: "Forbidden" };
+    }
+    return validateResourceAccess(scope, ids);
   }
 
   if (path === "/auth/logout" || path === "/auth/me") {

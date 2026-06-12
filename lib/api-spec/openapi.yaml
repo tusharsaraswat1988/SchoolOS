@@ -320,6 +320,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AcademicSessionList"
+    post:
+      operationId: createAcademicSession
+      tags: [organizations]
+      summary: Create an academic session for a branch
+      parameters:
+        - $ref: "#/components/parameters/BranchIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSessionBody"
+      responses:
+        "201":
+          description: Created session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcademicSession"
 
   /branches/{branchId}/sessions/current:
     get:
@@ -341,6 +360,145 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+
+  /branches/{branchId}/sessions/{sessionId}:
+    patch:
+      operationId: updateAcademicSession
+      tags: [organizations]
+      summary: Update an academic session
+      parameters:
+        - $ref: "#/components/parameters/BranchIdParam"
+        - $ref: "#/components/parameters/SessionIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSessionBody"
+      responses:
+        "200":
+          description: Updated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcademicSession"
+
+  /branches/{branchId}/sessions/{sessionId}/set-current:
+    post:
+      operationId: setCurrentAcademicSession
+      tags: [organizations]
+      summary: Set the current academic session for a branch
+      parameters:
+        - $ref: "#/components/parameters/BranchIdParam"
+        - $ref: "#/components/parameters/SessionIdParam"
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcademicSession"
+
+  /branches/{branchId}/financial-sessions:
+    get:
+      operationId: listFinancialSessions
+      tags: [organizations]
+      summary: List financial year sessions for a branch
+      parameters:
+        - $ref: "#/components/parameters/BranchIdParam"
+      responses:
+        "200":
+          description: Financial sessions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialSessionList"
+    post:
+      operationId: createFinancialSession
+      tags: [organizations]
+      summary: Create a financial year session for a branch
+      parameters:
+        - $ref: "#/components/parameters/BranchIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSessionBody"
+      responses:
+        "201":
+          description: Created financial session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialSession"
+
+  /branches/{branchId}/financial-sessions/current:
+    get:
+      operationId: getCurrentFinancialSession
+      tags: [organizations]
+      summary: Get current financial year session for a branch
+      parameters:
+        - $ref: "#/components/parameters/BranchIdParam"
+      responses:
+        "200":
+          description: Current financial session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialSession"
+        "404":
+          description: No current financial session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /branches/{branchId}/financial-sessions/{financialSessionId}:
+    patch:
+      operationId: updateFinancialSession
+      tags: [organizations]
+      summary: Update a financial year session
+      parameters:
+        - $ref: "#/components/parameters/BranchIdParam"
+        - name: financialSessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSessionBody"
+      responses:
+        "200":
+          description: Updated financial session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialSession"
+
+  /branches/{branchId}/financial-sessions/{financialSessionId}/set-current:
+    post:
+      operationId: setCurrentFinancialSession
+      tags: [organizations]
+      summary: Set the current financial year session for a branch
+      parameters:
+        - $ref: "#/components/parameters/BranchIdParam"
+        - name: financialSessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Current financial session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialSession"
 
   /branches/{branchId}/sessions/{sessionId}/students:
     get:
@@ -1104,7 +1262,7 @@ components:
 
     StudentStatus:
       type: string
-      enum: [active, inactive, graduated, transferred]
+      enum: [active, inactive, graduated, transferred, left, tc_issued, alumni, suspended]
 
     Gender:
       type: string
@@ -1380,6 +1538,81 @@ components:
         total:
           type: integer
 
+    FinancialSession:
+      type: object
+      required: [id, societyId, schoolId, branchId, code, name, startsOn, endsOn, isCurrent, status, createdAt]
+      properties:
+        id:
+          type: integer
+        societyId:
+          type: integer
+        schoolId:
+          type: integer
+        branchId:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        isCurrent:
+          type: boolean
+        status:
+          $ref: "#/components/schemas/EntityStatus"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    FinancialSessionList:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancialSession"
+        total:
+          type: integer
+
+    CreateSessionBody:
+      type: object
+      required: [code, name, startsOn, endsOn]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        isCurrent:
+          type: boolean
+
+    UpdateSessionBody:
+      type: object
+      properties:
+        name:
+          type: string
+        startsOn:
+          type: string
+          format: date
+        endsOn:
+          type: string
+          format: date
+        status:
+          $ref: "#/components/schemas/EntityStatus"
+
     Student:
       type: object
       required:
@@ -1400,6 +1633,8 @@ components:
           type: integer
         admissionNumber:
           type: string
+        registrationNumber:
+          type: ["string", "null"]
         rollNumber:
           type: ["string", "null"]
         firstName:
@@ -1417,6 +1652,10 @@ components:
           type: ["string", "null"]
         photoUrl:
           type: ["string", "null"]
+        signatureUrl:
+          type: ["string", "null"]
+        age:
+          type: ["integer", "null"]
         classId:
           type: integer
         className:
@@ -1447,6 +1686,27 @@ components:
           type: ["string", "null"]
         category:
           type: ["string", "null"]
+        religion:
+          type: ["string", "null"]
+        nationality:
+          type: ["string", "null"]
+        aadhaar:
+          type: ["string", "null"]
+        penNumber:
+          type: ["string", "null"]
+        apaarId:
+          type: ["string", "null"]
+        udiseStudentId:
+          type: ["string", "null"]
+        isRteStudent:
+          type: boolean
+        isCwsnStudent:
+          type: boolean
+        house:
+          type: ["string", "null"]
+        admissionDate:
+          type: ["string", "null"]
+          format: date
         status:
           $ref: "#/components/schemas/StudentStatus"
         createdAt:
@@ -1505,6 +1765,37 @@ components:
           type: string
         address:
           type: string
+        registrationNumber:
+          type: string
+        religion:
+          type: string
+        nationality:
+          type: string
+        aadhaar:
+          type: string
+        penNumber:
+          type: string
+        apaarId:
+          type: string
+        udiseStudentId:
+          type: string
+        isRteStudent:
+          type: boolean
+        isCwsnStudent:
+          type: boolean
+        house:
+          type: string
+        admissionDate:
+          type: string
+          format: date
+        status:
+          $ref: "#/components/schemas/StudentStatus"
+        photoUrl:
+          type: string
+        signatureUrl:
+          type: string
+        socialCategory:
+          type: string
 
     UpdateStudentBody:
       type: object
@@ -1539,6 +1830,35 @@ components:
         status:
           $ref: "#/components/schemas/StudentStatus"
         bloodGroup:
+          type: string
+        registrationNumber:
+          type: string
+        religion:
+          type: string
+        nationality:
+          type: string
+        aadhaar:
+          type: string
+        penNumber:
+          type: string
+        apaarId:
+          type: string
+        udiseStudentId:
+          type: string
+        isRteStudent:
+          type: boolean
+        isCwsnStudent:
+          type: boolean
+        house:
+          type: string
+        admissionDate:
+          type: string
+          format: date
+        photoUrl:
+          type: string
+        signatureUrl:
+          type: string
+        socialCategory:
           type: string
 
     StaffMember:

@@ -1,5 +1,6 @@
 import { date, index, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { academicSessionsTable } from "./academic-sessions";
+import { financialSessionsTable } from "./financial-sessions";
 import { branchesTable } from "./branches";
 import { feeStatusEnum, paymentMethodEnum } from "./enums";
 import { schoolsTable } from "./schools";
@@ -22,6 +23,9 @@ export const feeRecordsTable = pgTable(
     sessionId: integer("session_id")
       .notNull()
       .references(() => academicSessionsTable.id, { onDelete: "cascade" }),
+    financialSessionId: integer("financial_session_id").references(() => financialSessionsTable.id, {
+      onDelete: "cascade",
+    }),
     studentId: integer("student_id")
       .notNull()
       .references(() => studentsTable.id, { onDelete: "cascade" }),

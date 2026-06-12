@@ -29,6 +29,12 @@
       "when": 1781283600000,
       "tag": "0003_student_documents",
       "breakpoints": true
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781500000000,
+      "tag": "0009_billing_m7_m8_invoices",
+      "breakpoints": true
     }
   ]
 }

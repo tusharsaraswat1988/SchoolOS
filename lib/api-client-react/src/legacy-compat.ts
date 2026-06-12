@@ -578,10 +578,20 @@ export function useGetRecentActivity<
 export {
   useHealthCheck,
   useListSchools,
+  useListSocieties,
   useCreateSchool,
   useGetSchool,
   useUpdateSchool,
+  useGetBranch,
+  useGetSociety,
   getListSchoolsQueryKey,
+  getListSocietiesQueryKey,
+  getGetSchoolQueryKey,
+  getListSchoolBranchesQueryKey,
+  useGetPlatformDashboard,
+  getGetPlatformDashboardQueryKey,
+  useListSchoolBranches,
+  getCurrentSession,
 } from "./generated/api";
 
 export { UserRole } from "./generated/api.schemas";

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, academicSessionsTable, schoolProfilesTable, schoolsTable } from "@workspace/db";
+import { db, academicSessionsTable, financialSessionsTable, schoolProfilesTable, schoolsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { SchoolProfileBody } from "../lib/udise-schemas";
 
@@ -16,16 +16,28 @@ router.get("/schools/:schoolId/profile", async (req, res) => {
     .where(eq(schoolProfilesTable.schoolId, schoolId))
     .limit(1);
 
-  const sessions = await db
-    .select({
-      branchId: academicSessionsTable.branchId,
-      code: academicSessionsTable.code,
-      startsOn: academicSessionsTable.startsOn,
-      endsOn: academicSessionsTable.endsOn,
-      isCurrent: academicSessionsTable.isCurrent,
-    })
-    .from(academicSessionsTable)
-    .where(eq(academicSessionsTable.schoolId, schoolId));
+  const [sessions, financialSessions] = await Promise.all([
+    db
+      .select({
+        branchId: academicSessionsTable.branchId,
+        code: academicSessionsTable.code,
+        startsOn: academicSessionsTable.startsOn,
+        endsOn: academicSessionsTable.endsOn,
+        isCurrent: academicSessionsTable.isCurrent,
+      })
+      .from(academicSessionsTable)
+      .where(eq(academicSessionsTable.schoolId, schoolId)),
+    db
+      .select({
+        branchId: financialSessionsTable.branchId,
+        code: financialSessionsTable.code,
+        startsOn: financialSessionsTable.startsOn,
+        endsOn: financialSessionsTable.endsOn,
+        isCurrent: financialSessionsTable.isCurrent,
+      })
+      .from(financialSessionsTable)
+      .where(eq(financialSessionsTable.schoolId, schoolId)),
+  ]);
 
   return res.json({
     schoolId,
@@ -33,6 +45,7 @@ router.get("/schools/:schoolId/profile", async (req, res) => {
     schoolCode: school.code,
     profile: profile ?? null,
     academicSessions: sessions,
+    financialSessions,
   });
 });
 

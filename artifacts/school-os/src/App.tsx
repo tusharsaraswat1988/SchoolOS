@@ -20,6 +20,14 @@ import Login from "@/pages/login";
 
 import Platform from "@/pages/platform";
 
+import PlatformAdminHub from "@/pages/platform-admin";
+
+import PlatformOrganizationsHub from "@/pages/platform-organizations";
+
+import PlatformSocieties from "@/pages/platform-societies";
+
+import PlatformSchoolOps from "@/pages/platform-school-ops";
+
 import SocietyDashboard from "@/pages/society-dashboard";
 
 import SelectBranch from "@/pages/select-branch";
@@ -40,6 +48,10 @@ import StudentForm from "@/pages/student-form";
 
 import StudentDetail from "@/pages/student-detail";
 
+import DocumentMaster from "@/pages/document-master";
+
+import StudentDocumentsDashboard from "@/pages/student-documents-dashboard";
+
 import Staff from "@/pages/staff";
 
 import Classes from "@/pages/classes";
@@ -53,6 +65,7 @@ import Announcements from "@/pages/announcements";
 import Schools from "@/pages/schools";
 
 import SchoolSettings from "@/pages/school-settings";
+import Sessions from "@/pages/sessions";
 
 import Subjects from "@/pages/subjects";
 
@@ -63,10 +76,19 @@ import StaffAttendance from "@/pages/staff-attendance";
 import Udise from "@/pages/udise";
 
 import FeeStructure from "@/pages/fee-structure";
+import BillingInvoiceSettings from "@/pages/billing-invoice-settings";
 
 import Activity from "@/pages/activity";
 
 import Analytics from "@/pages/analytics";
+
+import AdmissionLeads from "@/pages/admission-leads";
+
+import MyAccess from "@/pages/my-access";
+
+import AccessControl from "@/pages/access-control";
+
+import PlatformAccessControl from "@/pages/platform-access-control";
 
 
 
@@ -117,6 +139,78 @@ function Router() {
         <ProtectedRoute roles={["super_admin"]}>
 
           <Platform />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
+      <Route path="/platform/admin">
+
+        <ProtectedRoute roles={["super_admin"]} permissions={["platform.full_access"]}>
+
+          <PlatformAdminHub />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
+      <Route path="/platform/organizations">
+
+        <ProtectedRoute roles={["super_admin"]} permissions={["platform.full_access"]}>
+
+          <PlatformOrganizationsHub />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
+      <Route path="/platform/organizations/societies">
+
+        <ProtectedRoute roles={["super_admin"]} permissions={["platform.full_access"]}>
+
+          <PlatformSocieties />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
+      <Route path="/platform/organizations/schools">
+
+        <ProtectedRoute roles={["super_admin", "society_admin"]}>
+
+          <Schools />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
+      <Route path="/platform/school-ops">
+
+        <ProtectedRoute roles={["super_admin"]} permissions={["platform.full_access"]}>
+
+          <PlatformSchoolOps />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
+      <Route path="/platform/access-control">
+
+        <ProtectedRoute roles={["super_admin"]} permissions={["platform.full_access"]}>
+
+          <PlatformAccessControl />
 
         </ProtectedRoute>
 
@@ -262,6 +356,30 @@ function Router() {
 
 
 
+      <Route path="/student-documents">
+
+        <ProtectedRoute roles={["school_admin", "principal", "teacher"]} requireBranch>
+
+          <StudentDocumentsDashboard />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
+      <Route path="/document-master">
+
+        <ProtectedRoute roles={["school_admin", "principal"]} requireBranch>
+
+          <DocumentMaster />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
       <Route path="/staff">
 
         <ProtectedRoute roles={["school_admin", "principal"]} requireBranch>
@@ -322,6 +440,16 @@ function Router() {
 
       </Route>
 
+      <Route path="/billing/invoice-settings">
+
+        <ProtectedRoute roles={["school_admin", "principal", "accountant"]} requireBranch>
+
+          <BillingInvoiceSettings />
+
+        </ProtectedRoute>
+
+      </Route>
+
       <Route path="/announcements">
 
         <ProtectedRoute roles={["school_admin", "principal", "teacher"]} requireBranch>
@@ -337,6 +465,16 @@ function Router() {
         <ProtectedRoute roles={["super_admin", "school_admin", "principal"]}>
 
           <SchoolSettings />
+
+        </ProtectedRoute>
+
+      </Route>
+
+      <Route path="/sessions">
+
+        <ProtectedRoute roles={["super_admin", "school_admin", "principal", "accountant"]}>
+
+          <Sessions />
 
         </ProtectedRoute>
 
@@ -387,6 +525,42 @@ function Router() {
         <ProtectedRoute roles={["school_admin", "principal"]} requireBranch>
 
           <Analytics />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
+      <Route path="/admission-leads">
+
+        <ProtectedRoute roles={["school_admin", "principal", "coordinator"]} requireBranch>
+
+          <AdmissionLeads />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
+      <Route path="/access-control">
+
+        <ProtectedRoute roles={["school_admin", "principal"]} permissions={["permissions.manage"]} requireBranch>
+
+          <AccessControl />
+
+        </ProtectedRoute>
+
+      </Route>
+
+
+
+      <Route path="/my-access">
+
+        <ProtectedRoute>
+
+          <MyAccess />
 
         </ProtectedRoute>
 

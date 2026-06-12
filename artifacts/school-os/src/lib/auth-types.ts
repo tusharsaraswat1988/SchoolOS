@@ -23,6 +23,7 @@ export type AuthUser = {
   schoolId: number | null;
   branchId: number | null;
   sessionId: number | null;
+  financialSessionId: number | null;
   studentId: number | null;
   status?: string;
 };
@@ -32,6 +33,7 @@ export type ActiveContext = {
   schoolId?: number | null;
   branchId?: number | null;
   sessionId?: number | null;
+  financialSessionId?: number | null;
   studentId?: number | null;
 };
 

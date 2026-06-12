@@ -22,12 +22,9 @@ import {
 } from "../lib/auth-scope";
 
 import { resolveLoginRedirect } from "../lib/auth-redirect";
-
-
+import { filterNavigationItems, NAVIGATION_REGISTRY } from "../lib/navigation-registry";
 
 const router = Router();
-
-
 
 const LoginBody = z.object({
 
@@ -197,6 +194,23 @@ router.get("/auth/me", async (req, res) => {
     ...authReq.auth.user,
     permissions: authReq.auth.permissions,
   });
+});
+
+router.get("/auth/navigation", async (req, res) => {
+  const authReq = req as import("../lib/auth-context").AuthenticatedRequest;
+  if (!authReq.auth) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const portal = (req.query.portal as string) === "portal" ? "portal" : "admin";
+  const items = filterNavigationItems(
+    NAVIGATION_REGISTRY,
+    authReq.auth.permissions,
+    authReq.auth.scope.role,
+    portal,
+  ).map(({ key, href, label, portal: itemPortal }) => ({ key, href, label, portal: itemPortal }));
+
+  return res.json({ items, permissions: authReq.auth.permissions });
 });
 
 

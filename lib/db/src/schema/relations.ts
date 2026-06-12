@@ -1,11 +1,24 @@
 import { relations } from "drizzle-orm";
 import { academicSessionsTable } from "./academic-sessions";
+import { financialSessionsTable } from "./financial-sessions";
 import { announcementsTable } from "./announcements";
 import { attendanceRecordsTable } from "./attendance";
 import { auditLogsTable } from "./audit";
 import { branchesTable } from "./branches";
 import { classesTable } from "./classes";
-import { feeRecordsTable } from "./fees";
+import {
+  billingRunsTable,
+  numberSequencesTable,
+  studentFeeAssignmentsTable,
+} from "./billing-config";
+import {
+  billingSettingsTable,
+  invoiceItemsTable,
+  invoicesTable,
+  invoiceTemplatesTable,
+} from "./billing-invoices";
+import { ledgerEntriesTable } from "./billing-ledger";
+import { feeHeadsTable } from "./fee-structures";
 import { platformsTable } from "./platforms";
 import {
   permissionsTable,
@@ -20,6 +33,19 @@ import { schoolsTable } from "./schools";
 import { sectionsTable } from "./sections";
 import { societiesTable } from "./societies";
 import { parentsTable, studentsTable } from "./students";
+import {
+  admissionLeadFollowUpsTable,
+  admissionLeadsTable,
+} from "./admission-leads";
+import {
+  communicationPreferencesTable,
+  documentMasterTable,
+  documentVerificationsTable,
+  documentsTable,
+  personRelationsTable,
+  siblingMappingsTable,
+  studentRelationMappingsTable,
+} from "./student-master";
 import { otpLoginEventsTable, userPermissionsTable, usersTable } from "./users";
 
 export const platformsRelations = relations(platformsTable, ({ many }) => ({
@@ -53,6 +79,7 @@ export const branchesRelations = relations(branchesTable, ({ one, many }) => ({
     references: [schoolsTable.id],
   }),
   sessions: many(academicSessionsTable),
+  financialSessions: many(financialSessionsTable),
 }));
 
 export const sessionsRelations = relations(academicSessionsTable, ({ one, many }) => ({
@@ -61,6 +88,14 @@ export const sessionsRelations = relations(academicSessionsTable, ({ one, many }
     references: [branchesTable.id],
   }),
   classes: many(classesTable),
+  admissionLeads: many(admissionLeadsTable),
+}));
+
+export const financialSessionsRelations = relations(financialSessionsTable, ({ one }) => ({
+  branch: one(branchesTable, {
+    fields: [financialSessionsTable.branchId],
+    references: [branchesTable.id],
+  }),
 }));
 
 export const rolesRelations = relations(rolesTable, ({ many }) => ({
@@ -179,12 +214,91 @@ export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
     fields: [studentsTable.classId],
     references: [classesTable.id],
   }),
+  billingClass: one(classesTable, {
+    fields: [studentsTable.billingClassId],
+    references: [classesTable.id],
+    relationName: "studentBillingClass",
+  }),
   section: one(sectionsTable, {
     fields: [studentsTable.sectionId],
     references: [sectionsTable.id],
   }),
   parents: many(parentsTable),
+  relationMappings: many(studentRelationMappingsTable),
+  communicationPreference: one(communicationPreferencesTable, {
+    fields: [studentsTable.id],
+    references: [communicationPreferencesTable.studentId],
+  }),
+  feeAssignments: many(studentFeeAssignmentsTable),
+  ledgerEntries: many(ledgerEntriesTable),
 }));
+
+export const personRelationsRelations = relations(personRelationsTable, ({ many }) => ({
+  studentMappings: many(studentRelationMappingsTable),
+}));
+
+export const studentRelationMappingsRelations = relations(
+  studentRelationMappingsTable,
+  ({ one }) => ({
+    student: one(studentsTable, {
+      fields: [studentRelationMappingsTable.studentId],
+      references: [studentsTable.id],
+    }),
+    relation: one(personRelationsTable, {
+      fields: [studentRelationMappingsTable.relationId],
+      references: [personRelationsTable.id],
+    }),
+  }),
+);
+
+export const siblingMappingsRelations = relations(siblingMappingsTable, ({ one }) => ({
+  studentA: one(studentsTable, {
+    fields: [siblingMappingsTable.studentIdA],
+    references: [studentsTable.id],
+    relationName: "siblingAsA",
+  }),
+  studentB: one(studentsTable, {
+    fields: [siblingMappingsTable.studentIdB],
+    references: [studentsTable.id],
+    relationName: "siblingAsB",
+  }),
+}));
+
+export const documentMasterRelations = relations(documentMasterTable, ({ many }) => ({
+  documents: many(documentsTable),
+}));
+
+export const documentsRelations = relations(documentsTable, ({ one, many }) => ({
+  documentMaster: one(documentMasterTable, {
+    fields: [documentsTable.documentMasterId],
+    references: [documentMasterTable.id],
+  }),
+  verifications: many(documentVerificationsTable),
+}));
+
+export const documentVerificationsRelations = relations(
+  documentVerificationsTable,
+  ({ one }) => ({
+    document: one(documentsTable, {
+      fields: [documentVerificationsTable.documentId],
+      references: [documentsTable.id],
+    }),
+  }),
+);
+
+export const communicationPreferencesRelations = relations(
+  communicationPreferencesTable,
+  ({ one }) => ({
+    student: one(studentsTable, {
+      fields: [communicationPreferencesTable.studentId],
+      references: [studentsTable.id],
+    }),
+    primaryRelation: one(personRelationsTable, {
+      fields: [communicationPreferencesTable.primaryRelationId],
+      references: [personRelationsTable.id],
+    }),
+  }),
+);
 
 export const parentsRelations = relations(parentsTable, ({ one }) => ({
   student: one(studentsTable, {
@@ -194,5 +308,160 @@ export const parentsRelations = relations(parentsTable, ({ one }) => ({
   user: one(usersTable, {
     fields: [parentsTable.userId],
     references: [usersTable.id],
+  }),
+}));
+
+export const admissionLeadsRelations = relations(admissionLeadsTable, ({ one, many }) => ({
+  session: one(academicSessionsTable, {
+    fields: [admissionLeadsTable.sessionId],
+    references: [academicSessionsTable.id],
+  }),
+  interestedClass: one(classesTable, {
+    fields: [admissionLeadsTable.interestedClassId],
+    references: [classesTable.id],
+  }),
+  convertedStudent: one(studentsTable, {
+    fields: [admissionLeadsTable.convertedStudentId],
+    references: [studentsTable.id],
+  }),
+  assignedTo: one(usersTable, {
+    fields: [admissionLeadsTable.assignedToUserId],
+    references: [usersTable.id],
+  }),
+  followUps: many(admissionLeadFollowUpsTable),
+}));
+
+export const admissionLeadFollowUpsRelations = relations(admissionLeadFollowUpsTable, ({ one }) => ({
+  lead: one(admissionLeadsTable, {
+    fields: [admissionLeadFollowUpsTable.leadId],
+    references: [admissionLeadsTable.id],
+  }),
+}));
+
+export const numberSequencesRelations = relations(numberSequencesTable, ({ one }) => ({
+  branch: one(branchesTable, {
+    fields: [numberSequencesTable.branchId],
+    references: [branchesTable.id],
+  }),
+  session: one(academicSessionsTable, {
+    fields: [numberSequencesTable.sessionId],
+    references: [academicSessionsTable.id],
+  }),
+}));
+
+export const billingRunsRelations = relations(billingRunsTable, ({ one }) => ({
+  branch: one(branchesTable, {
+    fields: [billingRunsTable.branchId],
+    references: [branchesTable.id],
+  }),
+  session: one(academicSessionsTable, {
+    fields: [billingRunsTable.sessionId],
+    references: [academicSessionsTable.id],
+  }),
+  createdByUser: one(usersTable, {
+    fields: [billingRunsTable.createdBy],
+    references: [usersTable.id],
+  }),
+}));
+
+export const studentFeeAssignmentsRelations = relations(studentFeeAssignmentsTable, ({ one }) => ({
+  student: one(studentsTable, {
+    fields: [studentFeeAssignmentsTable.studentId],
+    references: [studentsTable.id],
+  }),
+  feeHead: one(feeHeadsTable, {
+    fields: [studentFeeAssignmentsTable.feeHeadId],
+    references: [feeHeadsTable.id],
+  }),
+  session: one(academicSessionsTable, {
+    fields: [studentFeeAssignmentsTable.sessionId],
+    references: [academicSessionsTable.id],
+  }),
+}));
+
+export const ledgerEntriesRelations = relations(ledgerEntriesTable, ({ one }) => ({
+  student: one(studentsTable, {
+    fields: [ledgerEntriesTable.studentId],
+    references: [studentsTable.id],
+  }),
+  feeHead: one(feeHeadsTable, {
+    fields: [ledgerEntriesTable.feeHeadId],
+    references: [feeHeadsTable.id],
+  }),
+  referenceEntry: one(ledgerEntriesTable, {
+    fields: [ledgerEntriesTable.referenceEntryId],
+    references: [ledgerEntriesTable.id],
+    relationName: "ledgerEntryReference",
+  }),
+  createdByUser: one(usersTable, {
+    fields: [ledgerEntriesTable.createdBy],
+    references: [usersTable.id],
+  }),
+  invoice: one(invoicesTable, {
+    fields: [ledgerEntriesTable.invoiceId],
+    references: [invoicesTable.id],
+  }),
+  invoiceItem: one(invoiceItemsTable, {
+    fields: [ledgerEntriesTable.invoiceItemId],
+    references: [invoiceItemsTable.id],
+  }),
+}));
+
+export const invoiceTemplatesRelations = relations(invoiceTemplatesTable, ({ one, many }) => ({
+  branch: one(branchesTable, {
+    fields: [invoiceTemplatesTable.branchId],
+    references: [branchesTable.id],
+  }),
+  session: one(academicSessionsTable, {
+    fields: [invoiceTemplatesTable.sessionId],
+    references: [academicSessionsTable.id],
+  }),
+  invoices: many(invoicesTable),
+  billingSettings: many(billingSettingsTable),
+}));
+
+export const billingSettingsRelations = relations(billingSettingsTable, ({ one }) => ({
+  branch: one(branchesTable, {
+    fields: [billingSettingsTable.branchId],
+    references: [branchesTable.id],
+  }),
+  session: one(academicSessionsTable, {
+    fields: [billingSettingsTable.sessionId],
+    references: [academicSessionsTable.id],
+  }),
+  invoiceTemplate: one(invoiceTemplatesTable, {
+    fields: [billingSettingsTable.invoiceTemplateId],
+    references: [invoiceTemplatesTable.id],
+  }),
+}));
+
+export const invoicesRelations = relations(invoicesTable, ({ one, many }) => ({
+  student: one(studentsTable, {
+    fields: [invoicesTable.studentId],
+    references: [studentsTable.id],
+  }),
+  session: one(academicSessionsTable, {
+    fields: [invoicesTable.sessionId],
+    references: [academicSessionsTable.id],
+  }),
+  billingRun: one(billingRunsTable, {
+    fields: [invoicesTable.billingRunId],
+    references: [billingRunsTable.id],
+  }),
+  invoiceTemplate: one(invoiceTemplatesTable, {
+    fields: [invoicesTable.invoiceTemplateId],
+    references: [invoiceTemplatesTable.id],
+  }),
+  items: many(invoiceItemsTable),
+}));
+
+export const invoiceItemsRelations = relations(invoiceItemsTable, ({ one }) => ({
+  invoice: one(invoicesTable, {
+    fields: [invoiceItemsTable.invoiceId],
+    references: [invoicesTable.id],
+  }),
+  feeHead: one(feeHeadsTable, {
+    fields: [invoiceItemsTable.feeHeadId],
+    references: [feeHeadsTable.id],
   }),
 }));

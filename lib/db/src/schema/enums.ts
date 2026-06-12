@@ -58,12 +58,39 @@ export const studentStatusEnum = pgEnum("student_status", [
   "inactive",
   "transferred",
   "graduated",
+  "left",
+  "tc_issued",
+  "alumni",
+  "suspended",
 ]);
 
 export const relationshipEnum = pgEnum("parent_relationship", [
   "father",
   "mother",
   "guardian",
+]);
+
+export const relationTypeEnum = pgEnum("relation_type", [
+  "father",
+  "mother",
+  "guardian",
+  "local_guardian",
+  "other",
+]);
+
+export const documentEntityTypeEnum = pgEnum("document_entity_type", [
+  "student",
+  "staff",
+  "teacher",
+  "driver",
+  "vehicle",
+  "vendor",
+]);
+
+export const documentVerificationStatusEnum = pgEnum("document_verification_status", [
+  "pending",
+  "verified",
+  "rejected",
 ]);
 
 export const attendanceStatusEnum = pgEnum("attendance_status", [
@@ -168,3 +195,77 @@ export const studentDocumentTypeEnum = pgEnum("student_document_type", [
   "transfer_certificate",
   "other",
 ]);
+
+export const admissionLeadSourceEnum = pgEnum("admission_lead_source", [
+  "walk_in",
+  "phone_inquiry",
+  "website",
+  "social_media",
+  "referral",
+  "camp_event",
+  "newspaper",
+  "hoarding",
+  "agent",
+  "existing_parent",
+  "other",
+]);
+
+export const admissionLeadStatusEnum = pgEnum("admission_lead_status", [
+  "new",
+  "contacted",
+  "follow_up",
+  "visited",
+  "converted",
+  "lost",
+]);
+
+export const admissionLeadLostReasonEnum = pgEnum("admission_lead_lost_reason", [
+  "fee_too_high",
+  "joined_other_school",
+  "location",
+  "timing",
+  "no_response",
+  "changed_mind",
+  "other",
+]);
+
+export const admissionLeadContactMethodEnum = pgEnum("admission_lead_contact_method", [
+  "call",
+  "whatsapp",
+  "sms",
+  "email",
+  "in_person",
+  "other",
+]);
+
+/** Billing MVP-A — Sprint 1 */
+export const invoiceStatusEnum = pgEnum("invoice_status", [
+  "published",
+  "partially_paid",
+  "paid",
+  "cancelled",
+]);
+
+export const billingRunStatusEnum = pgEnum("billing_run_status", [
+  "pending",
+  "running",
+  "completed",
+  "failed",
+]);
+
+export const discountKindEnum = pgEnum("billing_discount_kind", ["fixed", "percent"]);
+
+export const sequenceTypeEnum = pgEnum("billing_sequence_type", [
+  "invoice",
+  "receipt",
+  "payment",
+]);
+
+export const ledgerEntryTypeEnum = pgEnum("ledger_entry_type", [
+  "charge",
+  "payment",
+  "discount",
+  "advance",
+]);
+
+export const ledgerDirectionEnum = pgEnum("ledger_direction", ["debit", "credit"]);

@@ -3,6 +3,7 @@ import { db } from "./index";
 import { DEFAULT_DEV_PASSWORD, formatUserCode, hashPassword } from "./password";
 import {
   academicSessionsTable,
+  financialSessionsTable,
   announcementsTable,
   attendanceRecordsTable,
   auditLogsTable,
@@ -239,6 +240,42 @@ async function ensureSession(ctx: {
   );
 }
 
+async function ensureFinancialSession(ctx: {
+  societyId: number;
+  schoolId: number;
+  branchId: number;
+}) {
+  const [session] = await db
+    .insert(financialSessionsTable)
+    .values({
+      societyId: ctx.societyId,
+      schoolId: ctx.schoolId,
+      branchId: ctx.branchId,
+      code: "FY-2026-27",
+      name: "Financial Year 2026-27",
+      startsOn: "2026-04-01",
+      endsOn: "2027-03-31",
+      isCurrent: true,
+      status: "active",
+    })
+    .onConflictDoNothing({ target: [financialSessionsTable.branchId, financialSessionsTable.code] })
+    .returning();
+
+  return (
+    session ??
+    (await db
+      .select()
+      .from(financialSessionsTable)
+      .where(
+        and(
+          eq(financialSessionsTable.branchId, ctx.branchId),
+          eq(financialSessionsTable.code, "FY-2026-27"),
+        ),
+      )
+      .limit(1))[0]
+  );
+}
+
 async function ensureRolesPermissions(superAdminUserId: number | null) {
   const roles: Array<{ key: RoleKey; name: string; scope: "platform" | "society" | "school" | "branch" }> =
     [
@@ -273,12 +310,13 @@ async function ensureRolesPermissions(superAdminUserId: number | null) {
     { key: "society.manage", module: "society", action: "manage", description: "Manage society level settings" },
     { key: "school.manage", module: "school", action: "manage", description: "Manage school level settings" },
     { key: "branch.manage", module: "branch", action: "manage", description: "Manage branch level settings" },
-    { key: "session.manage", module: "session", action: "manage", description: "Manage academic sessions" },
+    { key: "session.manage", module: "session", action: "manage", description: "Manage academic and financial sessions" },
     { key: "class.manage", module: "class", action: "manage", description: "Manage classes and sections" },
     { key: "student.manage", module: "student", action: "manage", description: "Create and update students" },
     { key: "student.read", module: "student", action: "read", description: "Read student data" },
     { key: "attendance.manage", module: "attendance", action: "manage", description: "Manage attendance actions" },
     { key: "fees.manage", module: "fees", action: "manage", description: "Manage fee records" },
+    { key: "fees.collect", module: "fees", action: "collect", description: "Collect fees at counter" },
     { key: "announcements.manage", module: "announcements", action: "manage", description: "Manage announcements" },
     { key: "audit.read", module: "audit", action: "read", description: "Read audit logs" },
     { key: "permissions.manage", module: "permissions", action: "manage", description: "Manage RBAC assignments" },
@@ -315,6 +353,7 @@ async function ensureRolesPermissions(superAdminUserId: number | null) {
       "student.read",
       "attendance.manage",
       "fees.manage",
+      "fees.collect",
       "announcements.manage",
       "audit.read",
       "permissions.manage",
@@ -328,6 +367,7 @@ async function ensureRolesPermissions(superAdminUserId: number | null) {
       "student.read",
       "attendance.manage",
       "fees.manage",
+      "fees.collect",
       "announcements.manage",
       "audit.read",
       "permissions.manage",
@@ -343,7 +383,7 @@ async function ensureRolesPermissions(superAdminUserId: number | null) {
       "audit.read",
     ],
     coordinator: ["class.manage", "student.read", "attendance.manage", "announcements.manage"],
-    accountant: ["student.read", "fees.manage", "audit.read"],
+    accountant: ["student.read", "fees.manage", "fees.collect", "audit.read"],
     teacher: ["student.read", "attendance.manage", "announcements.manage"],
     parent: ["profile.self_read", "parent.child_read"],
     student: ["profile.self_read"],
@@ -946,6 +986,17 @@ export async function seedPhase0Foundation() {
     branchId: isgc.id,
   });
   const sessionIssg = await ensureSession({
+    societyId: org.society.id,
+    schoolId: org.school.id,
+    branchId: issg.id,
+  });
+
+  await ensureFinancialSession({
+    societyId: org.society.id,
+    schoolId: org.school.id,
+    branchId: isgc.id,
+  });
+  await ensureFinancialSession({
     societyId: org.society.id,
     schoolId: org.school.id,
     branchId: issg.id,

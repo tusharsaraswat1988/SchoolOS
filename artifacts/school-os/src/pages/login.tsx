@@ -32,7 +32,7 @@ export default function Login() {
       setCaptchaToken(c.token);
       setCaptchaAnswer("");
     } catch {
-      setError("Could not load captcha");
+      setError("Could not load captcha. Make sure the API server is running (pnpm dev).");
     }
   };
 
@@ -45,7 +45,8 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    if (isHydrated && user) {
+    const forceLogin = new URLSearchParams(window.location.search).get("force") === "1";
+    if (isHydrated && user && !forceLogin) {
       setLocation(defaultHomeForRole(user.role));
     }
   }, [isHydrated, user, setLocation]);

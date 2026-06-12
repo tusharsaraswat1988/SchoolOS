@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  academicSessionsTable,
   branchesTable,
   db,
   schoolsTable,
@@ -8,7 +7,6 @@ import {
 } from "@workspace/db";
 import { and, eq, like, sql } from "drizzle-orm";
 import { CreateSchoolBody, UpdateSchoolBody } from "@workspace/api-zod";
-import { resolveCurrentSession } from "../lib/scope";
 import { isAuthenticatedRequest } from "../lib/auth-context";
 
 const router = Router();
@@ -105,22 +103,6 @@ router.get("/branches/:branchId", async (req, res) => {
     .limit(1);
   if (!branch) return res.status(404).json({ error: "Branch not found" });
   return res.json(branch);
-});
-
-router.get("/branches/:branchId/sessions", async (req, res) => {
-  const branchId = Number(req.params.branchId);
-  const sessions = await db
-    .select()
-    .from(academicSessionsTable)
-    .where(eq(academicSessionsTable.branchId, branchId));
-  return res.json({ data: sessions, total: sessions.length });
-});
-
-router.get("/branches/:branchId/sessions/current", async (req, res) => {
-  const branchId = Number(req.params.branchId);
-  const session = await resolveCurrentSession(branchId);
-  if (!session) return res.status(404).json({ error: "No current session" });
-  return res.json(session);
 });
 
 router.post("/schools", async (req, res) => {

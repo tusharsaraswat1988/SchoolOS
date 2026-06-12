@@ -1,20 +1,9 @@
-import {
-
-  db,
-
-  permissionsTable,
-
-  rolePermissionsTable,
-
-  rolesTable,
-
-  usersTable,
-
-} from "@workspace/db";
+import { db, rolesTable, usersTable } from "@workspace/db";
 
 import { eq } from "drizzle-orm";
 
 import type { AuthScopePayload } from "./auth-scope";
+import { resolveEffectivePermissions } from "./effective-permissions";
 
 
 
@@ -70,22 +59,8 @@ export function buildAuthUser(
 
 
 
-export async function getUserPermissions(_userId: number, roleId: number): Promise<string[]> {
-
-  const rolePerms = await db
-
-    .select({ key: permissionsTable.key })
-
-    .from(rolePermissionsTable)
-
-    .innerJoin(permissionsTable, eq(rolePermissionsTable.permissionId, permissionsTable.id))
-
-    .where(eq(rolePermissionsTable.roleId, roleId));
-
-
-
-  return rolePerms.map((p) => p.key);
-
+export async function getUserPermissions(userId: number, roleId: number): Promise<string[]> {
+  return resolveEffectivePermissions(userId, roleId);
 }
 
 

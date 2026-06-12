@@ -8,6 +8,7 @@ export type ScopeState = {
   schoolId: number | null;
   branchId: number | null;
   sessionId: number | null;
+  financialSessionId: number | null;
   studentId: number | null;
   isReady: boolean;
   requiresBranchContext: boolean;
@@ -33,6 +34,7 @@ export function useScope(): ScopeState {
       schoolId: null,
       branchId: null,
       sessionId: null,
+      financialSessionId: null,
       studentId: null,
       isReady: false,
       requiresBranchContext: false,
@@ -45,6 +47,7 @@ export function useScope(): ScopeState {
   const schoolId = ctx.schoolId ?? user.schoolId ?? null;
   const branchId = ctx.branchId ?? user.branchId ?? null;
   const sessionId = ctx.sessionId ?? user.sessionId ?? null;
+  const financialSessionId = ctx.financialSessionId ?? user.financialSessionId ?? null;
   const studentId = ctx.studentId ?? user.studentId ?? null;
 
   switch (user.role) {
@@ -56,6 +59,7 @@ export function useScope(): ScopeState {
         schoolId: ctx.schoolId ?? null,
         branchId: ctx.branchId ?? null,
         sessionId: ctx.sessionId ?? null,
+        financialSessionId: ctx.financialSessionId ?? null,
         studentId: null,
         isReady: true,
         requiresBranchContext: false,
@@ -70,6 +74,7 @@ export function useScope(): ScopeState {
         schoolId: ctx.schoolId ?? null,
         branchId: null,
         sessionId: null,
+        financialSessionId: null,
         studentId: null,
         isReady: societyId != null,
         requiresBranchContext: false,
@@ -84,6 +89,7 @@ export function useScope(): ScopeState {
         schoolId,
         branchId,
         sessionId,
+        financialSessionId,
         studentId: null,
         isReady: schoolId != null,
         requiresBranchContext: true,
@@ -99,6 +105,7 @@ export function useScope(): ScopeState {
         schoolId,
         branchId: null,
         sessionId: null,
+        financialSessionId: null,
         studentId,
         isReady: studentId != null,
         requiresBranchContext: false,
@@ -113,6 +120,7 @@ export function useScope(): ScopeState {
         schoolId,
         branchId,
         sessionId,
+        financialSessionId,
         studentId: null,
         isReady: branchId != null && sessionId != null,
         requiresBranchContext: BRANCH_OPS_ROLES.includes(user.role),
@@ -129,6 +137,7 @@ export function useOperationalScope() {
   return {
     branchId: scope.branchId,
     sessionId: scope.sessionId,
+    financialSessionId: scope.financialSessionId,
     schoolId: scope.schoolId,
     societyId: scope.societyId,
   };

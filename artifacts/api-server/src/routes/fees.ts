@@ -3,7 +3,7 @@ import { classesTable, db, feeRecordsTable, studentsTable } from "@workspace/db"
 import { and, eq, sql } from "drizzle-orm";
 import { CreateFeeRecordBody, RecordFeePaymentBody } from "@workspace/api-zod";
 import { toPgDate } from "../lib/db-values";
-import { resolveSessionScope } from "../lib/scope";
+import { resolveCurrentFinancialSession, resolveSessionScope } from "../lib/scope";
 
 const router = Router();
 
@@ -90,6 +90,8 @@ router.post("/branches/:branchId/sessions/:sessionId/fees", async (req, res) => 
   const parsed = CreateFeeRecordBody.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid body" });
 
+  const financialSession = await resolveCurrentFinancialSession(branchId);
+
   const [record] = await db
     .insert(feeRecordsTable)
     .values({
@@ -99,6 +101,7 @@ router.post("/branches/:branchId/sessions/:sessionId/fees", async (req, res) => 
       schoolId: scope.schoolId,
       branchId: scope.branchId,
       sessionId: scope.sessionId,
+      financialSessionId: financialSession?.id ?? null,
       amount: parsed.data.amount,
       discount: parsed.data.discount ?? 0,
       dueDate: toPgDate(parsed.data.dueDate)!,

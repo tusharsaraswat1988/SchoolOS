@@ -7,6 +7,11 @@ import { resolveSessionScope } from "../lib/scope";
 import { studentListSelect } from "../lib/student-select";
 import { mapStudentResponse } from "../lib/response-mappers";
 import { StudentParentContactBody } from "../lib/udise-schemas";
+import { calculateAge, generateRegistrationNumber } from "../lib/student-scope";
+import {
+  seedDocumentMasterForSchool,
+  syncLegacyParentRelations,
+} from "../lib/sync-student-relations";
 
 const router = Router();
 
@@ -73,6 +78,8 @@ router.post("/branches/:branchId/sessions/:sessionId/students", async (req, res)
   }
 
   const admissionNumber = parsed.data.admissionNumber || `ADM-${Date.now()}`;
+  const registrationNumber =
+    (body.registrationNumber as string | undefined) || generateRegistrationNumber(branchId);
   const dobValue = (body.dob ?? body.dateOfBirth) as string | Date | undefined;
   const parentMobile = String(body.parentMobile ?? body.parentPhone ?? "");
   const parentEmail = String(body.parentEmail ?? "");
@@ -105,10 +112,22 @@ router.post("/branches/:branchId/sessions/:sessionId/students", async (req, res)
       branchId: scope.branchId,
       sessionId: scope.sessionId,
       admissionNumber,
+      registrationNumber,
       dob: toPgDate(dobValue)!,
       parentMobile,
+      nationality: body.nationality != null ? String(body.nationality) : undefined,
+      penNumber: body.penNumber != null ? String(body.penNumber) : undefined,
+      apaarId: body.apaarId != null ? String(body.apaarId) : undefined,
+      udiseStudentId: body.udiseStudentId != null ? String(body.udiseStudentId) : undefined,
+      isRteStudent: Boolean(body.isRteStudent),
+      isCwsnStudent: Boolean(body.isCwsnStudent),
+      house: body.house != null ? String(body.house) : undefined,
+      signatureUrl: body.signatureUrl != null ? String(body.signatureUrl) : undefined,
     })
     .returning();
+
+  await seedDocumentMasterForSchool(db, scope.societyId, scope.schoolId);
+  await syncLegacyParentRelations(db, student, scope);
 
   const [withClass] = await db
     .select(studentListSelect)

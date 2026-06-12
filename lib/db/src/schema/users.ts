@@ -8,6 +8,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { branchesTable } from "./branches";
 import { otpChannelEnum, otpPurposeEnum, otpStatusEnum, userStatusEnum } from "./enums";
@@ -37,7 +38,7 @@ export const usersTable = pgTable(
     name: text("name").notNull(),
     mobile: text("mobile").notNull(),
     email: text("email"),
-    studentId: integer("student_id").references(() => studentsTable.id, {
+    studentId: integer("student_id").references((): AnyPgColumn => studentsTable.id, {
       onDelete: "set null",
     }),
     status: userStatusEnum("status").notNull().default("active"),

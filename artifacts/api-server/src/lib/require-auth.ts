@@ -17,7 +17,7 @@ export function isPublicPath(path: string): boolean {
 }
 
 export function isAuthOnlyPath(path: string): boolean {
-  return AUTH_ONLY_PATHS.has(path);
+  return AUTH_ONLY_PATHS.has(path) || path === "/auth/navigation";
 }
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction) {

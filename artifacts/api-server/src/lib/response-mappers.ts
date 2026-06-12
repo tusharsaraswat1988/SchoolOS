@@ -1,16 +1,31 @@
+import { calculateAge } from "./student-scope";
+
 export function mapStudentResponse<T extends {
   dob?: string | null;
   parentMobile?: string;
   sectionName?: string | null;
   sectionId?: number;
   socialCategory?: string | null;
+  registrationNumber?: string | null;
+  nationality?: string | null;
+  penNumber?: string | null;
+  apaarId?: string | null;
+  udiseStudentId?: string | null;
+  isRteStudent?: boolean;
+  isCwsnStudent?: boolean;
+  house?: string | null;
+  signatureUrl?: string | null;
 }>(row: T) {
   return {
     ...row,
     dateOfBirth: row.dob,
+    age: calculateAge(row.dob),
     parentPhone: row.parentMobile,
     section: row.sectionName ?? undefined,
     category: row.socialCategory ?? undefined,
+    studentName: "firstName" in row && "lastName" in row
+      ? `${(row as { firstName: string }).firstName} ${(row as { lastName: string }).lastName}`.trim()
+      : undefined,
   };
 }
 

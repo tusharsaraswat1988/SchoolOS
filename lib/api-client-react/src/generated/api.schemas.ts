@@ -117,6 +117,10 @@ export const StudentStatus = {
   inactive: "inactive",
   graduated: "graduated",
   transferred: "transferred",
+  left: "left",
+  tc_issued: "tc_issued",
+  alumni: "alumni",
+  suspended: "suspended",
 } as const;
 
 export type Gender = (typeof Gender)[keyof typeof Gender];
@@ -282,9 +286,46 @@ export interface AcademicSessionList {
   total: number;
 }
 
+export interface FinancialSession {
+  id: number;
+  societyId: number;
+  schoolId: number;
+  branchId: number;
+  code: string;
+  name: string;
+  startsOn: string;
+  endsOn: string;
+  isCurrent: boolean;
+  status: EntityStatus;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface FinancialSessionList {
+  data: FinancialSession[];
+  total: number;
+}
+
+export interface CreateSessionBody {
+  code: string;
+  name: string;
+  startsOn: string;
+  endsOn: string;
+  isCurrent?: boolean;
+}
+
+export interface UpdateSessionBody {
+  name?: string;
+  startsOn?: string;
+  endsOn?: string;
+  status?: EntityStatus;
+}
+
 export interface Student {
   id: number;
   admissionNumber: string;
+  /** @nullable */
+  registrationNumber?: string | null;
   /** @nullable */
   rollNumber?: string | null;
   firstName: string;
@@ -298,6 +339,10 @@ export interface Student {
   bloodGroup?: string | null;
   /** @nullable */
   photoUrl?: string | null;
+  /** @nullable */
+  signatureUrl?: string | null;
+  /** @nullable */
+  age?: number | null;
   classId: number;
   /** @nullable */
   className?: string | null;
@@ -322,6 +367,24 @@ export interface Student {
   address?: string | null;
   /** @nullable */
   category?: string | null;
+  /** @nullable */
+  religion?: string | null;
+  /** @nullable */
+  nationality?: string | null;
+  /** @nullable */
+  aadhaar?: string | null;
+  /** @nullable */
+  penNumber?: string | null;
+  /** @nullable */
+  apaarId?: string | null;
+  /** @nullable */
+  udiseStudentId?: string | null;
+  isRteStudent?: boolean;
+  isCwsnStudent?: boolean;
+  /** @nullable */
+  house?: string | null;
+  /** @nullable */
+  admissionDate?: string | null;
   status: StudentStatus;
   createdAt: string;
 }
@@ -350,6 +413,21 @@ export interface CreateStudentBody {
   parentPhone?: string;
   parentEmail?: string;
   address?: string;
+  registrationNumber?: string;
+  religion?: string;
+  nationality?: string;
+  aadhaar?: string;
+  penNumber?: string;
+  apaarId?: string;
+  udiseStudentId?: string;
+  isRteStudent?: boolean;
+  isCwsnStudent?: boolean;
+  house?: string;
+  admissionDate?: string;
+  status?: StudentStatus;
+  photoUrl?: string;
+  signatureUrl?: string;
+  socialCategory?: string;
 }
 
 export interface UpdateStudentBody {
@@ -368,6 +446,20 @@ export interface UpdateStudentBody {
   address?: string;
   status?: StudentStatus;
   bloodGroup?: string;
+  registrationNumber?: string;
+  religion?: string;
+  nationality?: string;
+  aadhaar?: string;
+  penNumber?: string;
+  apaarId?: string;
+  udiseStudentId?: string;
+  isRteStudent?: boolean;
+  isCwsnStudent?: boolean;
+  house?: string;
+  admissionDate?: string;
+  photoUrl?: string;
+  signatureUrl?: string;
+  socialCategory?: string;
 }
 
 export interface StaffMember {

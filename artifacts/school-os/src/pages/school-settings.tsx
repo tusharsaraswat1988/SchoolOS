@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Layout } from "@/components/layout";
 
 import { useAuthStore } from "@/lib/auth";
+import { useScope } from "@/lib/use-scope";
 
 import { apiGet, apiSend } from "@/lib/api";
 
@@ -37,8 +38,8 @@ type SchoolProfile = Record<string, unknown> & {
 export default function SchoolSettings() {
 
   const { user } = useAuthStore();
-
-  const schoolId = user?.schoolId || 1;
+  const scope = useScope();
+  const schoolId = scope.schoolId ?? user?.schoolId;
 
   const { toast } = useToast();
 
@@ -49,18 +50,24 @@ export default function SchoolSettings() {
   const [profile, setProfile] = useState<SchoolProfile>({});
 
   const [sessions, setSessions] = useState<Array<{ code: string; startsOn: string; endsOn: string; isCurrent: boolean }>>([]);
+  const [financialSessions, setFinancialSessions] = useState<typeof sessions>([]);
 
 
 
   useEffect(() => {
+    if (!schoolId) {
+      setLoading(false);
+      return;
+    }
 
-    apiGet<{ profile: SchoolProfile | null; academicSessions: typeof sessions }>(`/schools/${schoolId}/profile`)
+    apiGet<{ profile: SchoolProfile | null; academicSessions: typeof sessions; financialSessions?: typeof sessions }>(`/schools/${schoolId}/profile`)
 
       .then((data) => {
 
         setProfile(data.profile ?? {});
 
         setSessions(data.academicSessions ?? []);
+        setFinancialSessions(data.financialSessions ?? []);
 
       })
 
@@ -129,6 +136,7 @@ export default function SchoolSettings() {
 
 
   const currentSession = sessions.find((s) => s.isCurrent) ?? sessions[0];
+  const currentFinancialSession = financialSessions.find((s) => s.isCurrent) ?? financialSessions[0];
 
 
 
@@ -148,17 +156,29 @@ export default function SchoolSettings() {
 
 
 
-        {currentSession && (
+        {(currentSession || currentFinancialSession) && (
 
           <Card>
 
-            <CardHeader><CardTitle className="text-base">Academic Session</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">Active Sessions</CardTitle></CardHeader>
 
-            <CardContent className="text-sm text-muted-foreground">
+            <CardContent className="text-sm text-muted-foreground space-y-2">
 
-              {currentSession.code}: {currentSession.startsOn} → {currentSession.endsOn}
-
-              {currentSession.isCurrent ? " (current)" : ""}
+              {currentSession && (
+                <p>
+                  <span className="font-medium text-foreground">Academic:</span>{" "}
+                  {currentSession.code}: {currentSession.startsOn} → {currentSession.endsOn}
+                  {currentSession.isCurrent ? " (current)" : ""}
+                </p>
+              )}
+              {currentFinancialSession && (
+                <p>
+                  <span className="font-medium text-foreground">Financial:</span>{" "}
+                  {currentFinancialSession.code}: {currentFinancialSession.startsOn} → {currentFinancialSession.endsOn}
+                  {currentFinancialSession.isCurrent ? " (current)" : ""}
+                </p>
+              )}
+              <p className="text-xs">Manage sessions in <a href="/sessions" className="text-primary underline-offset-4 hover:underline">Sessions</a>.</p>
 
             </CardContent>
 

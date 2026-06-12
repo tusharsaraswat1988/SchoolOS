@@ -1,4 +1,4 @@
-import { index, integer, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, serial, text, timestamp, uniqueIndex, type AnyPgColumn } from "drizzle-orm/pg-core";
 import { academicSessionsTable } from "./academic-sessions";
 import { branchesTable } from "./branches";
 import { entityStatusEnum } from "./enums";
@@ -25,7 +25,7 @@ export const classesTable = pgTable(
     code: text("code").notNull(),
     name: text("name").notNull(),
     gradeOrder: integer("grade_order"),
-    classTeacherUserId: integer("class_teacher_user_id").references(() => usersTable.id, {
+    classTeacherUserId: integer("class_teacher_user_id").references((): AnyPgColumn => usersTable.id, {
       onDelete: "set null",
     }),
     status: entityStatusEnum("status").notNull().default("active"),

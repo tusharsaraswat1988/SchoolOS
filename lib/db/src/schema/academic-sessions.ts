@@ -1,4 +1,15 @@
-import { boolean, check, date, index, integer, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  check,
+  date,
+  index,
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { entityStatusEnum } from "./enums";
 import { branchesTable } from "./branches";
@@ -23,6 +34,8 @@ export const academicSessionsTable = pgTable(
     startsOn: date("starts_on").notNull(),
     endsOn: date("ends_on").notNull(),
     isCurrent: boolean("is_current").notNull().default(false),
+    defaultFeeDueDay: integer("default_fee_due_day").notNull().default(10),
+    prorateMidMonthAdmission: boolean("prorate_mid_month_admission").notNull().default(true),
     status: entityStatusEnum("status").notNull().default("active"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
